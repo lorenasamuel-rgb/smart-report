@@ -11,7 +11,7 @@ agent recommends; adjudication and adverse action stay human.
 ## Data statement (hackathon guidelines)
 
 All candidate names, employers, records, documents and figures in this repository are
-**fictional and self-generated** for the hackathon. No Accurate Background production,
+**fictional and self-generated** for the hackathon. No production,
 test or development data, databases, extracts or internal datasets are used anywhere.
 
 ## What is in the repo

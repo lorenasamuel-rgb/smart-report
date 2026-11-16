@@ -1,11 +1,11 @@
-# Accurate Signal — Product Requirements
+# Smart Report — Product Requirements
 
 Status: hackathon MVP, v0.2.0 · Accurate Hackathon 2026 (Code with Cognition)
 Audience: product, engineering, and reviewers of the security and compliance design.
 
 ## 1. Summary
 
-Accurate Signal ranks a background-screening case with one risk signal and a stated reason. Every finding shows what the candidate stated against what was verified, and every claim is traceable to a source document and to the SLA rule that routed the decision.
+Smart Report ranks a background-screening case with one risk signal and a stated reason. Every finding shows what the candidate stated against what was verified, and every claim is traceable to a source document and to the SLA rule that routed the decision.
 
 The agent recommends. Adjudication and adverse action stay human.
 
@@ -16,7 +16,7 @@ A screening report is a pile of verifications. The recruiter has to notice the d
 - A claim with no source gets treated as a fact.
 - A model, or a rushed reader, makes the hiring call.
 
-Accurate Signal separates those jobs. A model extracts. Code decides whether a claim is allowed to exist and which SLA rule applies. A person adjudicates.
+Smart Report separates those jobs. A model extracts. Code decides whether a claim is allowed to exist and which SLA rule applies. A person adjudicates.
 
 ## 3. Users
 
@@ -48,7 +48,7 @@ Access is tiered L1–L5 (section 7). The prototype switches role and level in t
 
 There is no build step. The key `ANTHROPIC_API_KEY` stays server-side.
 
-All candidate names, employers, records, documents, and figures are fictional and self-generated. No Accurate Background production, test, or development data is used.
+All candidate names, employers, records, documents, and figures are fictional and self-generated. No production, test, or development data is used.
 
 ## 6. Functional requirements
 
@@ -186,7 +186,7 @@ This mapping is the product intent of the hackathon build. It is not a legal opi
 - Live consent capture, permissible-purpose certification, or dispute handling.
 - Writing an adjudication back to an order-management system.
 - An append-only audit store, authentication, and server-side enforcement of level on the static prototype.
-- Using any Accurate Background production or test data.
+- Using any production or test data.
 - Letting the model choose the signal, the rule, or the hiring outcome.
 
 ## 11. Acceptance

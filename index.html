@@ -578,16 +578,16 @@ const SLA_RULES=[
   {id:"6.1",area:"General",rule:"All checks complete with every section auto-cleared: case is adjudicated by Smart Report as meeting standards.",auto:true}
 ];
 const CASE_ADJ={
-  "AB-2026-1187":{mode:"manual",rules:["2.2","4.2","5.1"]},
-  "AB-2026-1203":{mode:"manual",rules:["3.2"]},
-  "AB-2026-1219":{mode:"auto",rules:["6.1"]},
-  "AB-2026-1224":{mode:"pending",rules:[]},
-  "AB-2026-1230":{mode:"pending",rules:[]}
+  "SR-2026-1187":{mode:"manual",rules:["2.2","4.2","5.1"]},
+  "SR-2026-1203":{mode:"manual",rules:["3.2"]},
+  "SR-2026-1219":{mode:"auto",rules:["6.1"]},
+  "SR-2026-1224":{mode:"pending",rules:[]},
+  "SR-2026-1230":{mode:"pending",rules:[]}
 };
 
 const CASES = [
 {
-  id:"AB-2026-1187", order:"ORD-55821", name:"Jordan Avery", role:"Senior Financial Analyst", location:"Chicago, IL", geo:"CHI",
+  id:"SR-2026-1187", order:"ORD-55821", name:"Jordan Avery", role:"Senior Financial Analyst", location:"Chicago, IL", geo:"CHI",
   pkg:"Finance package · 6 checks", ordered:"Nov 10, 2026", due:"Nov 17, 2026", dueIn:"2 days",
   signal:"critical", status:"review", progress:[6,6], completed:"Nov 14, 2026",
   signalReason:"Undisclosed county criminal record, plus a 14-month gap between the stated and verified start date at the most recent employer.",
@@ -670,7 +670,7 @@ const CASES = [
   ]
 },
 {
-  id:"AB-2026-1203", order:"ORD-55834", name:"Priya Nair", role:"Registered Nurse", location:"Phoenix, AZ", geo:"PHX",
+  id:"SR-2026-1203", order:"ORD-55834", name:"Priya Nair", role:"Registered Nurse", location:"Phoenix, AZ", geo:"PHX",
   pkg:"Healthcare package · 5 checks", ordered:"Nov 11, 2026", due:"Nov 18, 2026", dueIn:"3 days",
   signal:"attention", status:"review", progress:[5,5], completed:"Nov 14, 2026",
   signalReason:"Degree conferral date differs by one year from the application; everything else verified clean.",
@@ -711,7 +711,7 @@ const CASES = [
   ]
 },
 {
-  id:"AB-2026-1219", order:"ORD-55861", name:"Daniel Okafor", role:"Software Engineer", location:"Austin, TX", geo:"AUS",
+  id:"SR-2026-1219", order:"ORD-55861", name:"Daniel Okafor", role:"Software Engineer", location:"Austin, TX", geo:"AUS",
   pkg:"Standard package · 4 checks", ordered:"Nov 12, 2026", due:"Nov 19, 2026", dueIn:"4 days",
   signal:"routine", status:"clear", progress:[4,4], completed:"Nov 13, 2026",
   signalReason:"All checks complete. No discrepancies found.",
@@ -729,7 +729,7 @@ const CASES = [
   sources:[]
 },
 {
-  id:"AB-2026-1224", order:"ORD-55872", name:"Sofia Mendes", role:"Customer Support Lead", location:"Orlando, FL", geo:"ORL",
+  id:"SR-2026-1224", order:"ORD-55872", name:"Sofia Mendes", role:"Customer Support Lead", location:"Orlando, FL", geo:"ORL",
   pkg:"Standard package · 5 checks", ordered:"Nov 13, 2026", due:"Nov 20, 2026", dueIn:"5 days", eta:"Nov 17, 2:00 PM",
   signal:"routine", status:"progress", progress:[3,5],
   signalReason:"In progress: county criminal search and one employer verification still pending. Nothing flagged so far.",
@@ -747,7 +747,7 @@ const CASES = [
   sources:[]
 },
 {
-  id:"AB-2026-1230", order:"ORD-55890", name:"Hannah Liu", role:"Marketing Coordinator", location:"Seattle, WA", geo:"SEA",
+  id:"SR-2026-1230", order:"ORD-55890", name:"Hannah Liu", role:"Marketing Coordinator", location:"Seattle, WA", geo:"SEA",
   pkg:"Standard package · 4 checks", ordered:"Nov 14, 2026", due:"Nov 21, 2026", dueIn:"6 days", eta:"Nov 19, 11:00 AM",
   signal:"routine", status:"progress", progress:[1,4],
   signalReason:"Just ordered: identity verified, remaining checks queued.",
@@ -840,7 +840,7 @@ function renderQueue(){
     <div class="qbar">
       <div class="search-wrap">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <input id="qSearch" type="search" placeholder="Search by name, reference (AB-…) or order number (ORD-…)" value="${escq(state.q)}" aria-label="Search screenings">
+        <input id="qSearch" type="search" placeholder="Search by name, reference (SR-…) or order number (ORD-…)" value="${escq(state.q)}" aria-label="Search screenings">
       </div>
       <div class="date-search">
         <label for="dateField">Date</label>
@@ -1167,7 +1167,7 @@ function openSLA(highlight=[]){
    Ask this report — scripted assistant (prototype)
 ========================================================= */
 const CASE_QA={
- "AB-2026-1187":[
+ "SR-2026-1187":[
   {q:"Why is this case critical?",keys:["critical","why","signal"],minLevel:3,
    a:'Two findings drive the critical signal: a Cook County misdemeanor the candidate answered "No" to in the disclosure <cbtn>5</cbtn><cbtn>1</cbtn>, and a 14-month gap between stated and verified start dates at Meridian Capital <cbtn>2</cbtn>. Under <sbtn>4.2</sbtn> an undisclosed record always routes to recruiter review.'},
   {q:"What did the employer confirm?",keys:["employer","meridian","confirm"],minLevel:2,
@@ -1177,7 +1177,7 @@ const CASE_QA={
   {q:"Is anything verified clean?",keys:["clean","clear","verified","positive"],minLevel:2,
    a:'Yes. Identity <cbtn>1</cbtn>, education <cbtn>4</cbtn> and the drug screen (negative) <cbtn>7</cbtn> all verified with no issues, and Northgate employment matched exactly <cbtn>3</cbtn>.'}
  ],
- "AB-2026-1203":[
+ "SR-2026-1203":[
   {q:"Why does this need review?",keys:["review","why","signal","discrepancy"],minLevel:2,
    a:'One discrepancy: the registrar shows the BSN conferred May 2020, a year later than stated <cbtn>3</cbtn><cbtn>1</cbtn>. Under <sbtn>3.2</sbtn> a conferral variance over 6 months routes to recruiter review. Everything else verified clean.'},
   {q:"Is her nursing license valid?",keys:["license","valid","nursing","board"],minLevel:2,
@@ -1263,7 +1263,7 @@ function wireChat(c){
 ========================================================= */
 function exportSummary(c){
   const lines=[
-    "ACCURATE SIGNAL SCREENING REPORT",
+    "SMART REPORT",
     `${c.name} · ${c.role} · ${c.location}`,
     `Report ${c.id} · Order ${c.order} · Ordered ${c.ordered} · Due ${c.due}`,
     `Signal: ${SIGNAL_LABEL[c.signal]}. ${c.signalReason}`,
@@ -1538,7 +1538,7 @@ function intakeHTML(){
 }
 function buildIntake(spec){
   intakeSeq+=1;
-  const id="AB-2026-"+(1400+intakeSeq);
+  const id="SR-2026-"+(1400+intakeSeq);
   const c={
     id, order:"ORD-"+(56100+intakeSeq), name:spec.name, role:spec.role, location:spec.location, geo:spec.geo, pkg:spec.pkg,
     ordered:"Nov 16, 2026", due:"Nov 23, 2026", dueIn:"7 days",

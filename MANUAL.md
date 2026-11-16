@@ -64,7 +64,7 @@ Os cartões do dashboard filtram a lista. Clique de novo no cartão ativo para v
 
 A barra **Screening status** filtra por andamento: **Needs review**, **In progress**, **Complete and clear**.
 
-A busca aceita nome, referência (`AB-…`) ou número do pedido (`ORD-…`). O campo **Date** restringe por data de pedido (**Ordered**), prazo (**Due**), conclusão (**Completed**) ou qualquer uma delas (**Any date**). Se nada aparecer, **Show all** limpa filtro, busca e data.
+A busca aceita nome, referência (`SR-…`) ou número do pedido (`ORD-…`). O campo **Date** restringe por data de pedido (**Ordered**), prazo (**Due**), conclusão (**Completed**) ou qualquer uma delas (**Any date**). Se nada aparecer, **Show all** limpa filtro, busca e data.
 
 A caixa à esquerda da linha seleciona o caso para exportar. Ela não abre o report. Clique no restante da linha para abrir.
 
@@ -177,7 +177,7 @@ Critical prevalece sobre attention, que prevalece sobre routine. A regra 4.2 nã
 ## Um caminho curto no protótipo
 
 1. Fique em **Recruiter view**, Level 3.
-2. Abra Jordan Avery (`AB-2026-1187`), o caso critical no topo.
+2. Abra Jordan Avery (`SR-2026-1187`), o caso critical no topo.
 3. Clique na citação do registro de Cook County e leia o trecho marcado.
 4. Clique em **SLA 4.2** e leia a regra.
 5. Mude para Level 2 e veja a seção criminal travar. O chat, se perguntar do registro, também trava.
@@ -203,4 +203,4 @@ Para ver a matriz reagir:
 - Não altera o sinal porque o candidato respondeu ao convite.
 - Não grava a adjudicação num sistema de pedidos.
 - Não coleta consentimento real nem abre disputa.
-- Não usa dado de produção da Accurate. Os casos da demonstração são inventados.
+- Não usa dado de produção. Os casos da demonstração são inventados.
