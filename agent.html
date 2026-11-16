@@ -90,33 +90,34 @@ footer{max-width:1060px;margin:0 auto;padding:0 24px 40px;font-size:12px;color:v
 <body>
 <header><div class="hd">
   <span class="wordmark">Smart <em>Report</em></span>
-  <span class="chip">Live agent</span>
-  <a href="/">Static demo</a>
+  <span class="chip" id="agentChip">Live agent</span>
+  <a href="/" id="agentDemo">Static demo</a>
 </div></header>
 
 <main>
-  <h1>Live analysis MVP</h1>
-  <p class="sub">The documents below are fictional and editable. Run the agent: the LLM extracts findings with verbatim citations, a citation gate drops anything unsourced, and the SLA matrix decides auto vs review in deterministic code. Edit a document (change a date, remove the court record) and run again to watch the signal change.</p>
+  <h1 id="agentTitle">Live analysis MVP</h1>
+  <p class="sub" id="agentSub">The documents below are fictional and editable. Run the agent: the model extracts findings with verbatim citations, a citation gate drops anything unsourced, and the SLA matrix decides auto vs review in code. Edit a document and run again to watch the signal change. The assistant answers in the language you select.</p>
 
   <div class="err" id="err"></div>
 
-  <div class="card"><div class="head"><h2>Case documents · Jordan Avery, Senior Financial Analyst</h2></div>
+  <div class="card"><div class="head"><h2 id="agentDocs">Case documents · Jordan Avery, Senior Financial Analyst</h2></div>
     <div class="body" id="docs"></div>
   </div>
 
   <div class="runbar">
     <button class="btn" id="run">Run analysis</button>
-    <span class="lvl"><label for="level">Access level</label><select id="level">
+    <span class="lvl"><label for="lang" id="langLabel">Language</label><select id="lang"></select></span>
+    <span class="lvl"><label for="level" id="accessLabel">Access level</label><select id="level">
       <option value="1">Level 1</option><option value="2">Level 2</option>
       <option value="3" selected>Level 3</option><option value="4">Level 4</option><option value="5">Level 5</option>
     </select></span>
-    <span class="hint">The level filters what the chat below is allowed to see.</span>
+    <span class="hint" id="agentHint">The level filters what the chat below is allowed to see.</span>
   </div>
 
   <div id="result"></div>
 
   <div class="card" id="askCard" style="display:none">
-    <div class="head"><h2>Ask this report</h2><span class="hint">Grounded in the findings and documents, within your access level.</span></div>
+    <div class="head"><h2 id="askTitle">Ask this report</h2><span class="hint" id="askHint">Grounded in the findings and documents, within your access level.</span></div>
     <div class="body">
       <div id="chatLog"></div>
       <div class="chat"><input id="q" placeholder="Why does this case need review?" aria-label="Ask about this report"><button class="btn" id="send">Ask</button></div>
@@ -124,11 +125,13 @@ footer{max-width:1060px;margin:0 auto;padding:0 24px 40px;font-size:12px;color:v
   </div>
 </main>
 
-<footer>Smart Report MVP. Fictional data. The agent recommends; adjudication and adverse action stay human.</footer>
+<footer id="agentFoot">Smart Report MVP. Fictional data. The agent recommends; adjudication and adverse action stay human.</footer>
 
 <div class="drawer-scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true"></aside>
 
+<script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
 <script>
 const DOCS=[
  {id:"app",title:"Candidate application & disclosures",type:"candidate",date:"Nov 10, 2026",text:
@@ -182,7 +185,7 @@ function clearErr(){err.style.display="none"}
 
 const runBtn=document.getElementById("run");
 runBtn.addEventListener("click",async()=>{
-  clearErr();runBtn.disabled=true;runBtn.innerHTML='<span class="spin"></span>Analyzing with the agent';
+  clearErr();runBtn.disabled=true;runBtn.innerHTML='<span class="spin"></span>'+t("agentAnalyzing");
   try{
     const r=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({candidate:{name:"Jordan Avery",role:"Senior Financial Analyst"},documents:currentDocs()})});
@@ -191,18 +194,18 @@ runBtn.addEventListener("click",async()=>{
     last=j;renderResult(j);
     document.getElementById("askCard").style.display="block";
   }catch(e){
-    showErr("Analysis failed: "+e.message+". Running on Vercel with ANTHROPIC_API_KEY set? (This page needs the serverless API; it does not run from a static file.)");
+    showErr(t("agentErr",{msg:e.message}));
   }
-  runBtn.disabled=false;runBtn.textContent="Run analysis";
+  runBtn.disabled=false;runBtn.textContent=t("agentRun");
 });
 
 function renderResult(j){
   const el=document.getElementById("result");
   el.innerHTML=`<div class="card">
-    <div class="banner ${j.signal}"><b>${SIGNAL[j.signal]} signal.</b>&nbsp;${esc(j.reason)}</div>
-    <div class="rules">Adjudication: <b>${j.mode==="auto"?"auto, by Smart Report":"recruiter review required"}</b> · rules applied:
+    <div class="banner ${j.signal}"><b>${t("sigWord",{label:sigLabel(j.signal)})}.</b>&nbsp;${esc(j.reason)}</div>
+    <div class="rules">${t("agentRules")} <b>${j.mode==="auto"?t("agentAuto"):t("agentManual")}</b>
       ${j.rules.map(r=>`<span class="sla">SLA ${r}</span>`).join("")}
-      ${j.dropped?`· <span>${j.dropped} uncited claim${j.dropped>1?"s":""} dropped by the citation gate</span>`:""}
+      ${j.dropped?`· <span>${t("agentDropped",{n:j.dropped,s:j.dropped>1?"s":""})}</span>`:""}
     </div>
     <div class="body">${j.sections.map(s=>`
       <h3 style="font-size:14px;font-weight:900;margin:10px 0 2px">${esc(s.title||s.key)}</h3>
@@ -210,12 +213,12 @@ function renderResult(j){
         const diverges=f.kind==="discrepancy"||f.kind==="record";
         return `<div class="finding">
           <div class="f-top">
-            <span class="badge ${diverges?(s.key==="criminal"?"critical":"attention"):"clear"}"><span class="dot"></span>${diverges?(f.kind==="record"?"Record":"Discrepancy"):"Match"}</span>
+            <span class="badge ${diverges?(s.key==="criminal"?"critical":"attention"):"clear"}"><span class="dot"></span>${diverges?(f.kind==="record"?t("agentRecord"):t("tagDisc")):t("tagMatch")}</span>
             <h4>${esc(f.title)} ${(f.cites||[]).map((c,i)=>`<button class="cite" data-doc="${esc(c.doc)}" data-ex="${esc(c.excerpt)}">${esc(c.doc)}</button>`).join("")}</h4>
           </div>
           ${(f.claimed||f.verified)?`<div class="compare">
-            <div class="c"><div class="k">Candidate stated</div>${esc(f.claimed)||"Not applicable"}</div>
-            <div class="${diverges?"bad":"ok"}"><div class="k">Smart Report verified</div>${esc(f.verified)||"Pending"}</div>
+            <div class="c"><div class="k">${t("stated")}</div>${esc(f.claimed)||t("na")}</div>
+            <div class="${diverges?"bad":"ok"}"><div class="k">${t("verifiedBy")}</div>${esc(f.verified)||t("pendingVal")}</div>
           </div>`:""}
           ${f.note?`<p class="note">${esc(f.note)}</p>`:""}
         </div>`}).join("")}`).join("")}
@@ -247,16 +250,44 @@ async function ask(){
   log.insertAdjacentHTML("beforeend",`<div class="msg me">${esc(text)}</div>`);q.value="";
   try{
     const r=await fetch("/api/ask",{method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({question:text,level:+document.getElementById("level").value,
+        body:JSON.stringify({question:text,level:+document.getElementById("level").value,language:lang,
         candidate:{name:"Jordan Avery"},sections:last.sections,documents:currentDocs()})});
     const j=await r.json();if(!r.ok)throw new Error(j.error||("HTTP "+r.status));
     const html=esc(j.answer).replace(/\[([\w-]+)\]/g,(m,id)=>DOCS.some(d=>d.id===id)?`<button class="cite" data-doc="${id}" data-ex="">${id}</button>`:m);
     log.insertAdjacentHTML("beforeend",`<div class="msg ai">${html}</div>`);
     log.querySelectorAll(".cite:not([data-w])").forEach(b=>{b.dataset.w=1;b.addEventListener("click",()=>openSource(b.dataset.doc,b.dataset.ex))});
-  }catch(e){log.insertAdjacentHTML("beforeend",`<div class="msg ai">Ask failed: ${esc(e.message)}</div>`)}
+  }catch(e){log.insertAdjacentHTML("beforeend",`<div class="msg ai">${esc(t("askFail",{msg:e.message}))}</div>`)}
 }
 send.addEventListener("click",ask);
 q.addEventListener("keydown",e=>{if(e.key==="Enter")ask()});
+
+function applyAgent(){
+  document.title=t("docTitle");
+  document.getElementById("agentChip").textContent=t("agentChip");
+  document.getElementById("agentDemo").textContent=t("agentDemo");
+  document.getElementById("agentTitle").textContent=t("agentTitle");
+  document.getElementById("agentSub").textContent=t("agentSub");
+  document.getElementById("agentDocs").textContent=t("agentDocs");
+  document.getElementById("run").textContent=t("agentRun");
+  document.getElementById("langLabel").textContent=t("langLabel");
+  document.getElementById("accessLabel").textContent=t("access");
+  document.getElementById("agentHint").textContent=t("agentHint");
+  document.getElementById("askTitle").textContent=t("askTitle");
+  document.getElementById("askHint").textContent=t("agentAskHint");
+  document.getElementById("q").placeholder=t("agentPh");
+  document.getElementById("send").textContent=t("askBtn");
+  document.getElementById("agentFoot").textContent=t("agentFooter");
+  const lvl=document.getElementById("level");
+  [...lvl.options].forEach(o=>{o.textContent=t("levelN",{n:o.value})});
+  if(last) renderResult(last);
+}
+const langSel=document.getElementById("lang");
+LANGS.forEach(l=>{const o=document.createElement("option");o.value=l.id;o.textContent=l.label;langSel.appendChild(o)});
+try{const saved=localStorage.getItem("sr-lang"); if(saved&&UI[saved]) lang=saved;}catch(e){}
+langSel.value=lang;
+setLang(lang);
+langSel.addEventListener("change",()=>{setLang(langSel.value);applyAgent()});
+applyAgent();
 </script>
 </body>
 </html>

@@ -122,10 +122,11 @@ header{
 .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
 .lvl-wrap{display:flex;align-items:center;gap:10px}
 .lvl-wrap label{font-size:13px;font-weight:600;color:var(--ink-soft)}
-select#level{
+select#level, select#lang{
   font:inherit;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--peri);
   border-radius:10px;padding:7px 10px;cursor:pointer;
 }
+html[lang="zh-Hans"] body{font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC",var(--font-body)}
 .lvl-note{font-size:12.5px;color:var(--ink-soft);max-width:380px}
 
 /* ---------- layout ---------- */
@@ -520,15 +521,19 @@ footer{max-width:1120px;margin:0 auto;padding:0 24px 40px;font-size:12px;color:v
       </button>
       <div class="watch-pop" id="watchPop" hidden role="region" aria-label="Cases that need you"></div>
     </div>
-    <span class="proto-tag">Hackathon prototype · fictional data</span>
+    <span class="proto-tag" id="protoTag">Hackathon prototype · fictional data</span>
   </div>
   <div class="hd-controls">
     <div class="seg" role="group" aria-label="View as">
       <button id="roleRecruiter" aria-pressed="true">Recruiter view</button>
       <button id="roleCandidate" aria-pressed="false">Candidate view</button>
     </div>
+    <div class="lvl-wrap" id="langWrap">
+      <label for="lang" id="langLabel">Language</label>
+      <select id="lang"></select>
+    </div>
     <div class="lvl-wrap" id="lvlWrap">
-      <label for="level">Access level</label>
+      <label for="level" id="accessLabel">Access level</label>
       <select id="level">
         <option value="1">Level 1</option>
         <option value="2">Level 2</option>
@@ -544,11 +549,13 @@ footer{max-width:1120px;margin:0 auto;padding:0 24px 40px;font-size:12px;color:v
 
 <main id="app"></main>
 
-<footer>Smart Report · prototype built for the hackathon. All candidates, employers, records and documents on this page are fictional.</footer>
+<footer id="pageFoot">Smart Report · prototype built for the hackathon. All candidates, employers, records and documents on this page are fictional.</footer>
 
 <div class="drawer-scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dwTitle"></aside>
 
+<script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -780,6 +787,29 @@ const FILTERS={
 };
 const app = document.getElementById("app");
 const SIGNAL_LABEL = { critical:"Critical", attention:"Attention", routine:"Routine" };
+function sigLabel(s){return t(s==="critical"?"sigCritical":s==="attention"?"sigAttention":"sigRoutine")}
+function statusPair(status){
+  const map={verified:["clear","stVerified"],discrepancy:["critical","stDiscrepancy"],record:["critical","stRecord"],attention:["attention","stAttention"],pending:["pending","stPending"]};
+  const [k,key]=map[status]||["pending","stPending"];
+  return [k, t(key)];
+}
+function applyChrome(){
+  document.title=t("docTitle");
+  const proto=document.getElementById("protoTag"); if(proto) proto.textContent=t("proto");
+  const rr=document.getElementById("roleRecruiter"); if(rr) rr.textContent=t("roleRecruiter");
+  const rc=document.getElementById("roleCandidate"); if(rc) rc.textContent=t("roleCandidate");
+  const seg=document.querySelector(".seg"); if(seg) seg.setAttribute("aria-label", t("roleGroup"));
+  const al=document.getElementById("accessLabel"); if(al) al.textContent=t("access");
+  const ll=document.getElementById("langLabel"); if(ll) ll.textContent=t("langLabel");
+  const sla=document.getElementById("slaBtn"); if(sla) sla.textContent=t("slaBtn");
+  const foot=document.getElementById("pageFoot"); if(foot) foot.textContent=t("footer");
+  const lvl=document.getElementById("level");
+  if(lvl) [...lvl.options].forEach(o=>{o.textContent=t("levelN",{n:o.value})});
+  const note=document.getElementById("lvlNote");
+  if(note) note.textContent=t("lvl"+state.level);
+  const langSel=document.getElementById("lang");
+  if(langSel) langSel.title=t("langHint");
+}
 const SIGNAL_ORDER = { critical:0, attention:1, routine:2 };
 const STATUS_BADGE = {
   verified:["clear","Verified"], discrepancy:["critical","Discrepancy found"],
@@ -798,7 +828,7 @@ function badge(kind,label,extra=""){return `<span class="badge ${kind} ${extra}"
 function prog(c){const [d,t]=c.progress;return `<div class="prog"><div class="bar"><i style="width:${Math.round(d/t*100)}%"></i></div><span>${d}/${t}</span></div>`}
 function citeChips(c,cites){
   if(!cites||!cites.length) return "";
-  return cites.map(n=>`<button class="cite" data-case="${c.id}" data-src="${n}" aria-label="Open source ${n}">${n}</button>`).join("");
+  return cites.map(n=>`<button class="cite" data-case="${c.id}" data-src="${n}" aria-label="${escq(t("openSource",{n}))}">${n}</button>`).join("");
 }
 
 /* =========================================================
@@ -813,47 +843,47 @@ function renderQueue(){
   const nR=st("review"), nP=st("progress"), nC=st("clear"), total=CASES.length;
   const pc=n=>(n/total*100).toFixed(1)+"%";
   app.innerHTML = `
-    <h1 class="view-title">Screening queue</h1>
-    <p class="view-sub">One report, one alert. Cases are ranked by risk signal so the report that matters is the first one you open.</p>
+    <h1 class="view-title">${t("queueTitle")}</h1>
+    <p class="view-sub">${t("queueSub")}</p>
     ${intakeHTML()}
     <div class="dash">
-      <button class="tile" data-filter="" aria-pressed="${state.filter===null}"><div class="num">${total}</div><div class="lbl">Active screenings</div></button>
-      <button class="tile critical" data-filter="critical" aria-pressed="${state.filter==="critical"}"><div class="num">${sig("critical")}</div><div class="lbl">Critical signals</div></button>
-      <button class="tile attention" data-filter="attention" aria-pressed="${state.filter==="attention"}"><div class="num">${sig("attention")}</div><div class="lbl">Attention signals</div></button>
-      <button class="tile" data-filter="disc" aria-pressed="${state.filter==="disc"}"><div class="num">${disc}</div><div class="lbl">Discrepancies flagged</div></button>
-      <button class="tile clear" data-filter="clear" aria-pressed="${state.filter==="clear"}"><div class="num">${nC}</div><div class="lbl">Complete and clear</div></button>
+      <button class="tile" data-filter="" aria-pressed="${state.filter===null}"><div class="num">${total}</div><div class="lbl">${t("tileActive")}</div></button>
+      <button class="tile critical" data-filter="critical" aria-pressed="${state.filter==="critical"}"><div class="num">${sig("critical")}</div><div class="lbl">${t("tileCritical")}</div></button>
+      <button class="tile attention" data-filter="attention" aria-pressed="${state.filter==="attention"}"><div class="num">${sig("attention")}</div><div class="lbl">${t("tileAttention")}</div></button>
+      <button class="tile" data-filter="disc" aria-pressed="${state.filter==="disc"}"><div class="num">${disc}</div><div class="lbl">${t("tileDisc")}</div></button>
+      <button class="tile clear" data-filter="clear" aria-pressed="${state.filter==="clear"}"><div class="num">${nC}</div><div class="lbl">${t("tileClear")}</div></button>
     </div>
     <div class="dash-wide">
-      <h3>Screening status</h3>
-      <div class="statusbar" role="img" aria-label="${nR} need review, ${nP} in progress, ${nC} complete and clear">
+      <h3>${t("statusHeading")}</h3>
+      <div class="statusbar" role="img" aria-label="${t("ariaStatus",{nR,nP,nC})}">
         ${nR?`<i style="width:${pc(nR)};background:var(--pink)"></i>`:""}
         ${nP?`<i style="width:${pc(nP)};background:var(--blue)"></i>`:""}
         ${nC?`<i style="width:${pc(nC)};background:var(--green)"></i>`:""}
       </div>
       <div class="sb-legend">
-        <button data-filter="review" aria-pressed="${state.filter==="review"}"><i class="sw" style="background:var(--pink)"></i>Needs review · ${nR}</button>
-        <button data-filter="progress" aria-pressed="${state.filter==="progress"}"><i class="sw" style="background:var(--blue)"></i>In progress · ${nP}</button>
-        <button data-filter="clear" aria-pressed="${state.filter==="clear"}"><i class="sw" style="background:var(--green)"></i>Complete and clear · ${nC}</button>
-        <span class="checks">${done} of ${tot} individual checks finished</span>
+        <button data-filter="review" aria-pressed="${state.filter==="review"}"><i class="sw" style="background:var(--pink)"></i>${t("needReview")} · ${nR}</button>
+        <button data-filter="progress" aria-pressed="${state.filter==="progress"}"><i class="sw" style="background:var(--blue)"></i>${t("inProgress")} · ${nP}</button>
+        <button data-filter="clear" aria-pressed="${state.filter==="clear"}"><i class="sw" style="background:var(--green)"></i>${t("completeClear")} · ${nC}</button>
+        <span class="checks">${t("checksDone",{done,tot})}</span>
       </div>
     </div>
     <div class="qbar">
       <div class="search-wrap">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <input id="qSearch" type="search" placeholder="Search by name, reference (SR-…) or order number (ORD-…)" value="${escq(state.q)}" aria-label="Search screenings">
+        <input id="qSearch" type="search" placeholder="${escq(t("searchPh"))}" value="${escq(state.q)}" aria-label="${escq(t("searchAria"))}">
       </div>
       <div class="date-search">
-        <label for="dateField">Date</label>
-        <select id="dateField" aria-label="Which date to search">
-          <option value="any" ${state.dateField==="any"?"selected":""}>Any date</option>
-          <option value="ordered" ${state.dateField==="ordered"?"selected":""}>Ordered</option>
-          <option value="due" ${state.dateField==="due"?"selected":""}>Due</option>
-          <option value="completed" ${state.dateField==="completed"?"selected":""}>Completed</option>
+        <label for="dateField">${t("dateLabel")}</label>
+        <select id="dateField" aria-label="${escq(t("dateWhich"))}">
+          <option value="any" ${state.dateField==="any"?"selected":""}>${t("dateAny")}</option>
+          <option value="ordered" ${state.dateField==="ordered"?"selected":""}>${t("dateOrdered")}</option>
+          <option value="due" ${state.dateField==="due"?"selected":""}>${t("dateDue")}</option>
+          <option value="completed" ${state.dateField==="completed"?"selected":""}>${t("dateCompleted")}</option>
         </select>
-        <input id="dateSearch" type="date" aria-label="Search by date" value="${escq(state.date)}">
+        <input id="dateSearch" type="date" aria-label="${escq(t("dateAria"))}" value="${escq(state.date)}">
       </div>
-      <button class="ghost-btn" id="xlsBtn" disabled>Excel</button>
-      <button class="ghost-btn" id="zipBtn">Export ZIP (all)</button>
+      <button class="ghost-btn" id="xlsBtn" disabled>${t("excel")}</button>
+      <button class="ghost-btn" id="zipBtn">${t("zipAll")}</button>
     </div>
     <div class="queue" id="queueList"></div>`;
   wireIntake();
@@ -863,9 +893,9 @@ function renderQueue(){
   const selectedCases=()=>CASES.filter(c=>state.selected[c.id]);
   const updateZipBtn=()=>{
     const n=selectedCases().length;
-    zb.textContent=n?`Export ZIP (${n} selected)`:"Export ZIP (all)";
+    zb.textContent=n?t("zipN",{n}):t("zipAll");
     xb.disabled=!n;
-    xb.textContent=n?`Excel (${n})`:"Excel";
+    xb.textContent=n?t("excelN",{n}):t("excel");
   };
   zb.addEventListener("click",()=>{
     const sel=selectedCases();
@@ -874,7 +904,7 @@ function renderQueue(){
   xb.addEventListener("click",()=>{
     const sel=selectedCases();
     if(!sel.length) return;
-    if(!window.XLSX) return flash(xb,"Lib not loaded");
+    if(!window.XLSX) return flash(xb,t("flashLib"));
     dl(listXlsx(sel),"smart-report-status.xlsx");
   });
   updateZipBtn();
@@ -899,17 +929,17 @@ function renderQueue(){
     });
     if(state.filter&&FILTERS[state.filter]) shown=shown.filter(FILTERS[state.filter]);
     listEl.innerHTML = shown.length ? shown.map(c=>`
-        <div class="case-row${c.id===state.freshId?" fresh":""}" data-open="${c.id}" role="button" tabindex="0" aria-label="Open report for ${c.name}">
-          <label class="sel" title="Select for the Excel status list"><input type="checkbox" data-sel="${c.id}" ${state.selected[c.id]?"checked":""} aria-label="Select ${c.name} for the status list"></label>
-          ${badge(c.signal,SIGNAL_LABEL[c.signal])}
+        <div class="case-row${c.id===state.freshId?" fresh":""}" data-open="${c.id}" role="button" tabindex="0" aria-label="${escq(t("openReport",{name:c.name}))}">
+          <label class="sel" title="${escq(t("selectTitle"))}"><input type="checkbox" data-sel="${c.id}" ${state.selected[c.id]?"checked":""} aria-label="${escq(t("selectAria",{name:c.name}))}"></label>
+          ${badge(c.signal,sigLabel(c.signal))}
           <span class="who"><strong>${c.name}</strong><span>${c.role} · ${c.geo} · ${c.order}</span></span>
           ${badge(...assessOf(c))}
-          <span class="adj-cell${adjOf(c)==="Not adjudicated"?" todo":""}"><i class="k">Adjudication</i>${adjOf(c)}</span>
+          <span class="adj-cell${adjCode(c)==="not"?" todo":""}"><i class="k">${t("adjLabel")}</i>${adjOf(c)}</span>
           ${prog(c)}
-          <span class="due"><strong>Due in ${c.dueIn}</strong>${c.due}${c.eta?`<em class="eta">ETA ${c.eta}</em>`:""}</span>
-          <span class="signal-reason"><b>Why this signal:</b> ${c.signalReason}</span>
+          <span class="due"><strong>${t("dueIn",{when:c.dueIn})}</strong>${c.due}${c.eta?`<em class="eta">${t("etaShort",{eta:c.eta})}</em>`:""}</span>
+          <span class="signal-reason"><b>${t("whySignal")}</b> ${phrase(c.signalReason)}</span>
         </div>`).join("")
-      : `<div class="queue-empty">No screenings match your current filter or search.<br><button class="ghost-btn sm" data-clearall style="margin-top:10px">Show all</button></div>`;
+      : `<div class="queue-empty">${t("empty")}<br><button class="ghost-btn sm" data-clearall style="margin-top:10px">${t("showAll")}</button></div>`;
     listEl.querySelectorAll("[data-open]").forEach(row=>{
       const open=()=>{state.view="report";state.caseId=row.dataset.open;render();window.scrollTo(0,0)};
       row.addEventListener("click",e=>{if(e.target.closest(".sel"))return;open()});
@@ -934,12 +964,12 @@ function renderQueue(){
 function findingHTML(c,f){
   const sev = f.severity==="critical"?"verified-bad":f.severity==="attention"?"verified-warn":"verified-ok";
   const tag = f.kind==="discrepancy"
-      ? badge(f.severity==="critical"?"critical":"attention", f.severity==="critical"?"Discrepancy":"Check")
-      : f.kind==="note" ? badge("pending","Pending") : badge("clear","Match");
+      ? badge(f.severity==="critical"?"critical":"attention", f.severity==="critical"?t("tagDisc"):t("tagCheck"))
+      : f.kind==="note" ? badge("pending",t("tagPending")) : badge("clear",t("tagMatch"));
   const compare = (f.claimed||f.verified) ? `
     <div class="compare">
-      <div class="claimed"><div class="k">Candidate stated</div>${esc(f.claimed)||"Not applicable"}</div>
-      <div class="${sev}"><div class="k">Smart Report verified</div>${f.verified||"Pending"}</div>
+      <div class="claimed"><div class="k">${t("stated")}</div>${esc(f.claimed)||t("na")}</div>
+      <div class="${sev}"><div class="k">${t("verifiedBy")}</div>${f.verified||t("pendingVal")}</div>
     </div>`:"";
   return `
     <div class="finding">
@@ -947,25 +977,25 @@ function findingHTML(c,f){
       ${compare}
       ${f.note?`<p class="f-note">${f.note} ${compare?"":citeChips(c,f.cites)}</p>`:""}
       ${f.ctx?`<div class="ctx-row">
-        <button class="ghost-btn sm" data-ctx="${c.id}" ${state.ctxReq[c.id]?"disabled":""}>${state.ctxReq[c.id]?"Context requested ✓":"Request candidate context"}</button>
-        <span class="ctx-hint">${state.ctxReq[c.id]?"The candidate was invited to share their side. Any reply is attached to this report.":"Fair chance: invite the candidate to share their side before any decision."}</span>
+        <button class="ghost-btn sm" data-ctx="${c.id}" ${state.ctxReq[c.id]?"disabled":""}>${state.ctxReq[c.id]?t("ctxOn"):t("ctxAsk")}</button>
+        <span class="ctx-hint">${state.ctxReq[c.id]?t("ctxHintOn"):t("ctxHintOff")}</span>
       </div>`:""}
     </div>`;
 }
 
 function sectionHTML(c,s){
   const minLvl = SECTION_LEVELS[s.key]||2;
-  const [bk,bl] = STATUS_BADGE[s.status]||["pending","Pending"];
+  const [bk,bl] = statusPair(s.status);
   const head = `
     <div class="sec-head">
-      <h3>${s.title}</h3>
+      <h3>${secTitle(s.title)}</h3>
       <span class="lvl-pill">L${minLvl}+</span>
       ${badge(bk,bl)}
     </div>`;
   if(state.level < minLvl){
     return `<section class="section">${head}
       <div class="sec-locked">${icons.lock}
-        <span><b>Requires Level ${minLvl} access.</b> Your SLA tier (Level ${state.level}) does not include this section. Details stay hidden; only the status above is visible.</span>
+        <span><b>${t("lockTitle",{min:minLvl})}</b> ${t("lockBody",{level:state.level})}</span>
       </div></section>`;
   }
   if(state.level===1){ return "" }
@@ -978,24 +1008,24 @@ function renderReport(){
   const bannerIcon = bannerKind==="clear" ? icons.check : icons.alert;
   const l1 = state.level===1;
   const l1sections = l1?`
-      <section class="section"><div class="sec-head"><h3>Check status</h3>${badge("routine","Level 1 summary")}</div>
+      <section class="section"><div class="sec-head"><h3>${t("checkStatus")}</h3>${badge("routine",t("l1badge"))}</div>
       <div class="sec-body">${c.sections.map(s=>{
-        const [bk,bl]=STATUS_BADGE[s.status]||["pending","Pending"];
-        return `<div class="finding"><div class="f-top">${badge(bk,bl)}<h4>${s.title}</h4></div></div>`}).join("")}
-      <p class="f-note" style="padding-top:12px">Level 1 shows statuses only. Findings, discrepancies and sources require Level 2 or higher under your SLA.</p></div></section>`
+        const [bk,bl]=statusPair(s.status);
+        return `<div class="finding"><div class="f-top">${badge(bk,bl)}<h4>${secTitle(s.title)}</h4></div></div>`}).join("")}
+      <p class="f-note" style="padding-top:12px">${t("l1note")}</p></div></section>`
     : c.sections.map(s=>sectionHTML(c,s)).join("");
   app.innerHTML = `
     <div class="report-top">
-      <button class="backlink" id="back">${icons.back} Back to queue</button>
+      <button class="backlink" id="back">${icons.back} ${t("back")}</button>
       <div class="exp-group">
-        <span class="k">Export</span>
-        <button class="ghost-btn sm" id="expPdf">PDF</button>
-        <button class="ghost-btn sm" id="expPrint">Print</button>
+        <span class="k">${t("export")}</span>
+        <button class="ghost-btn sm" id="expPdf">${t("pdf")}</button>
+        <button class="ghost-btn sm" id="expPrint">${t("print")}</button>
       </div>
     </div>
     <div class="print-only">
       <span class="wordmark">Smart <em>Report</em></span>
-      <span class="print-meta">Confidential screening report · Level ${state.level}</span>
+      <span class="print-meta">${t("printMeta",{n:state.level})}</span>
     </div>
     <div class="report-head">
       <div class="rh-main">
@@ -1003,38 +1033,38 @@ function renderReport(){
           <h2>${c.name}</h2>
           <div class="meta">${c.role} · ${c.location} · ${c.pkg}</div>
         </div>
-        <div class="rh-badges">${badge(c.signal,SIGNAL_LABEL[c.signal]+" signal")}${
-          c.status==="clear"?badge("clear","Complete and clear"):c.status==="progress"?badge("pending","In progress"):badge("attention","Review required")}</div>
+        <div class="rh-badges">${badge(c.signal,t("sigWord",{label:sigLabel(c.signal)}))}${
+          c.status==="clear"?badge("clear",t("badgeClear")):c.status==="progress"?badge("pending",t("badgeProgress")):badge("attention",t("badgeReview"))}</div>
       </div>
-      <div class="signal-banner ${bannerKind}">${bannerIcon}<span><b>Why this case is ${SIGNAL_LABEL[c.signal].toLowerCase()}:</b> ${c.signalReason}</span></div>
+      <div class="signal-banner ${bannerKind}">${bannerIcon}<span><b>${t("whyCase",{signal:sigLabel(c.signal)})}</b> ${phrase(c.signalReason)}</span></div>
       <div class="rh-grid">
-        <div><div class="k">Report ID</div><div class="v">${c.id}</div></div>
-        <div><div class="k">Order no.</div><div class="v">${c.order}</div></div>
-        <div><div class="k">Ordered</div><div class="v">${c.ordered}</div></div>
-        <div><div class="k">Due</div><div class="v">${c.due}</div></div>
-        <div><div class="k">Checks complete</div><div class="v">${c.progress[0]} of ${c.progress[1]}</div></div>
-        ${c.eta?`<div><div class="k">Estimated completion</div><div class="v">${c.eta}</div></div>`:""}
-        <div><div class="k">Adjudication</div><div class="v">${adjOf(c)}</div><div class="adj-sub">${adjText(c)}${slaChips(c)}</div></div>
+        <div><div class="k">${t("reportId")}</div><div class="v">${c.id}</div></div>
+        <div><div class="k">${t("orderNo")}</div><div class="v">${c.order}</div></div>
+        <div><div class="k">${t("ordered")}</div><div class="v">${c.ordered}</div></div>
+        <div><div class="k">${t("due")}</div><div class="v">${c.due}</div></div>
+        <div><div class="k">${t("checksComplete")}</div><div class="v">${t("ofN",{a:c.progress[0],b:c.progress[1]})}</div></div>
+        ${c.eta?`<div><div class="k">${t("etaLabel")}</div><div class="v">${c.eta}</div></div>`:""}
+        <div><div class="k">${t("adjLabel")}</div><div class="v">${adjOf(c)}</div><div class="adj-sub">${adjText(c)}${slaChips(c)}</div></div>
       </div>
       ${CASE_ADJ[c.id].mode==="manual"?`
       <div class="decide">
-        <span class="k">Recruiter adjudication</span>
+        <span class="k">${t("recruiterAdj")}</span>
         ${state.decisions[c.id]?`
-          ${state.decisions[c.id]==="eligible"?badge("clear","Marked eligible"):badge("critical","Adverse action started")}
-          <button class="ghost-btn sm" data-undo="${c.id}">Undo</button>`
+          ${state.decisions[c.id]==="eligible"?badge("clear",t("markedEligible")):badge("critical",t("adverseStarted"))}
+          <button class="ghost-btn sm" data-undo="${c.id}">${t("undo")}</button>`
         :`
-          <button class="btn-solid" data-decide="eligible">Mark eligible</button>
-          <button class="btn-danger" data-decide="adverse" ${state.ctxReq[c.id]?"":"disabled"}>Start adverse action</button>
-          <span class="ctx-hint">${state.ctxReq[c.id]?"Candidate context requested. Review any reply before adverse action.":"Adverse action unlocks after candidate context is requested (fair chance)."}</span>`}
+          <button class="btn-solid" data-decide="eligible">${t("markEligible")}</button>
+          <button class="btn-danger" data-decide="adverse" ${state.ctxReq[c.id]?"":"disabled"}>${t("startAdverse")}</button>
+          <span class="ctx-hint">${state.ctxReq[c.id]?t("hintCtx"):t("hintLock")}</span>`}
       </div>`:""}
     </div>
     ${state.level>=2?chatCard(c):""}
     ${l1sections}
-    <p class="print-foot">Smart Report · fictional data · adjudication stays with the recruiter</p>
+    <p class="print-foot">${t("printFoot")}</p>
   `;
   document.getElementById("back").addEventListener("click",()=>{state.view="queue";render()});
   document.getElementById("expPrint").addEventListener("click",e=>exportReport(c,e.currentTarget));
-  document.getElementById("expPdf").addEventListener("click",e=>{window.jspdf?dl(pdfBlob(c),fileSlug(c)+".pdf"):flash(e.currentTarget,"Lib not loaded")});
+  document.getElementById("expPdf").addEventListener("click",e=>{window.jspdf?dl(pdfBlob(c),fileSlug(c)+".pdf"):flash(e.currentTarget,t("flashLib"))});
   app.querySelectorAll("[data-ctx]").forEach(b=>b.addEventListener("click",()=>{state.ctxReq[b.dataset.ctx]=true;render()}));
   app.querySelectorAll("[data-decide]").forEach(b=>b.addEventListener("click",()=>{state.decisions[c.id]=b.dataset.decide;render()}));
   const ub=app.querySelector("[data-undo]");
@@ -1047,30 +1077,30 @@ function renderCandidate(){
   const c = CASES.find(x=>x.id===state.candId)||CASES[0];
   const [d,t]=c.progress;
   app.innerHTML = `
-    <h1 class="view-title">Candidate portal</h1>
-    <p class="view-sub">What the candidate sees: each check shows complete or not complete. Findings, discrepancies and sources are never exposed here.</p>
-    <div class="cand-picker" role="group" aria-label="Preview as candidate">
+    <h1 class="view-title">${t("candTitle")}</h1>
+    <p class="view-sub">${t("candSub")}</p>
+    <div class="cand-picker" role="group" aria-label="${escq(t("candPreview"))}">
       ${CASES.map(x=>`<button data-cand="${x.id}" aria-pressed="${x.id===c.id}">${x.name}</button>`).join("")}
     </div>
     <div class="cand-card">
       <div class="cand-hero">
-        <h2>Hi ${c.name.split(" ")[0]}, here's your background check</h2>
-        <p>Ordered by your prospective employer on ${c.ordered} · Reference ${c.id}</p>
-        <div class="cand-prog"><div class="bar"><i style="width:${Math.round(d/t*100)}%"></i></div><span>${d} of ${t} checks complete${c.eta?` · estimated completion ${c.eta}`:""}</span></div>
+        <h2>${t("candHi",{name:c.name.split(" ")[0]})}</h2>
+        <p>${t("candOrdered",{date:c.ordered,id:c.id})}</p>
+        <div class="cand-prog"><div class="bar"><i style="width:${Math.round(d/t*100)}%"></i></div><span>${t("candProg",{d,t})}${c.eta?t("candEta",{eta:c.eta}):""}</span></div>
       </div>
       <div class="cand-rows">
         ${c.sections.map(s=>{
           const done = s.status!=="pending";
           return `<div class="cand-row">
-            <span class="nm">${s.title}<span class="sub">${done?"Finished and included in your report":"Still being processed"+(c.eta?" · ETA "+c.eta:"")}</span></span>
-            ${done?badge("clear","Complete"):badge("pending","Not complete")}
+            <span class="nm">${secTitle(s.title)}<span class="sub">${done?t("candFinished"):t("candProcessing")+(c.eta?t("candEta",{eta:c.eta}):"")}</span></span>
+            ${done?badge("clear",t("complete")):badge("pending",t("notComplete"))}
           </div>`}).join("")}
       </div>
       ${state.ctxReq[c.id]?`<div class="ctx-banner">
-        <b>Your reviewer invited you to add context.</b> A finding in your report can include your side of the story before any decision is made.
-        <div style="margin-top:8px">${state.ctxSent[c.id]?`<span class="ctx-hint">Context sent. It will be attached to your report for the reviewer.</span>`:`<button class="ghost-btn sm" id="ctxSend">Share your context</button>`}</div>
+        <b>${t("inviteTitle")}</b> ${t("inviteBody")}
+        <div style="margin-top:8px">${state.ctxSent[c.id]?`<span class="ctx-hint">${t("ctxSent")}</span>`:`<button class="ghost-btn sm" id="ctxSend">${t("shareCtx")}</button>`}</div>
       </div>`:""}
-      <div class="cand-foot"><b>Your rights:</b> you may request a free copy of your report and dispute any information you believe is inaccurate or incomplete. Disputes are reinvestigated at no cost to you.</div>
+      <div class="cand-foot">${t("rights")}</div>
     </div>`;
   app.querySelectorAll("[data-cand]").forEach(b=>b.addEventListener("click",()=>{state.candId=b.dataset.cand;render()}));
   const cs=document.getElementById("ctxSend");
@@ -1095,11 +1125,11 @@ function openSource(caseId,srcId,btn){
     <div class="dw-head">
       <span class="num">${s.id}</span>
       <div><h4 id="dwTitle">${s.title}</h4><div class="meta">${s.type} · ${s.date}</div></div>
-      <button class="dw-close" id="dwClose" aria-label="Close sources">✕</button>
+      <button class="dw-close" id="dwClose" aria-label="${escq(t("closeSources"))}">✕</button>
     </div>
     <div class="dw-body">
       <div class="dw-doc">${bodyHTML}</div>
-      <div class="dw-label">All sources in this report</div>
+      <div class="dw-label">${t("allSources")}</div>
       <div class="dw-list">
         ${c.sources.map(o=>`<button data-jump="${o.id}" class="${o.id===s.id?"current":""}"><span class="n">${o.id}</span><span>${o.title}</span></button>`).join("")}
       </div>
@@ -1119,40 +1149,43 @@ scrim.addEventListener("click",closeDrawer);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("drawer-open"))closeDrawer()});
 
 /* SLA criteria panel */
-function adjText(c){const m=CASE_ADJ[c.id].mode;return m==="auto"?"by Smart Report (auto)":m==="manual"?"by recruiter":"pending completion"}
+function adjCode(c){
+  const d=state.decisions[c.id];
+  if(d==="eligible") return "eligible";
+  if(d==="adverse") return "adverse";
+  const m=(CASE_ADJ[c.id]||{}).mode;
+  if(m==="auto") return "auto";
+  if(m==="pending") return "pending";
+  return "not";
+}
+function adjText(c){const m=(CASE_ADJ[c.id]||{}).mode;return m==="auto"?t("byAuto"):m==="manual"?t("byRecruiter"):t("pendingCompletion")}
 function assessOf(c){
-  if(c.status==="progress") return ["pending","Processing"];
-  if(c.status==="clear") return ["clear","Eligible"];
-  return ["attention","Review"];
+  if(c.status==="progress") return ["pending", t("assessProcessing")];
+  if(c.status==="clear") return ["clear", t("assessEligible")];
+  return ["attention", t("assessReview")];
 }
 function adjOf(c){
-  const d=state.decisions[c.id];
-  if(d==="eligible") return "Eligible · recruiter";
-  if(d==="adverse") return "Adverse action · recruiter";
-  const m=CASE_ADJ[c.id].mode;
-  if(m==="auto") return "Adjudicated · Smart Report";
-  if(m==="pending") return "Awaiting completion";
-  return "Not adjudicated";
+  return t({eligible:"adjEligible",adverse:"adjAdverse",auto:"adjAuto",pending:"adjAwaiting",not:"adjNot"}[adjCode(c)]);
 }
 function slaChips(c){
   const a=CASE_ADJ[c.id];
   if(state.level<3||!a.rules.length) return "";
-  return " · "+a.rules.map(r=>`<button class="cite sla" data-sla="${r}" aria-label="Open SLA rule ${r}">SLA ${r}</button>`).join("");
+  return " · "+a.rules.map(r=>`<button class="cite sla" data-sla="${r}" aria-label="${escq(t("openSla",{id:r}))}">SLA ${r}</button>`).join("");
 }
 function openSLA(highlight=[]){
   drawer.innerHTML=`
     <div class="dw-head">
       <span class="num">§</span>
-      <div><h4 id="dwTitle">SLA adjudication criteria</h4><div class="meta">Client SLA v2.3 · read-only · visible from Level 3</div></div>
-      <button class="dw-close" id="dwClose" aria-label="Close SLA criteria">✕</button>
+      <div><h4 id="dwTitle">${t("slaTitle")}</h4><div class="meta">${t("slaMeta")}</div></div>
+      <button class="dw-close" id="dwClose" aria-label="${escq(t("closeSla"))}">✕</button>
     </div>
     <div class="dw-body">
-      <p class="rule-intro">Set with your compliance team at onboarding. Every screening cites the rule that routed it to auto-adjudication by Smart Report or to recruiter review.</p>
+      <p class="rule-intro">${t("slaIntro")}</p>
       <div>${SLA_RULES.map(r=>`
         <div class="rule ${highlight.includes(r.id)?"current":""}" id="rule-${r.id}">
           <span class="rid">SLA ${r.id}</span>
-          <span class="rtxt"><b>${r.area}</b>${r.rule}</span>
-          ${r.auto?badge("clear","Auto"):badge("attention","Review")}
+          <span class="rtxt"><b>${t("sla."+r.id+".area")}</b>${t("sla."+r.id+".rule")}</span>
+          ${r.auto?badge("clear",t("autoBadge")):badge("attention",t("reviewBadge"))}
         </div>`).join("")}
       </div>
     </div>`;
@@ -1189,51 +1222,53 @@ function qaHTML(id,h){
     .replace(/<cbtn>(\d+)<\/cbtn>/g,(m,n)=>`<button class="cite" data-case="${id}" data-src="${n}">${n}</button>`)
     .replace(/<sbtn>([\d.]+)<\/sbtn>/g,(m,r)=>`<button class="cite sla" data-sla="${r}">SLA ${r}</button>`);
 }
-function answerFor(c,text){
-  const t=text.toLowerCase();
-  const hit=(CASE_QA[c.id]||[]).find(x=>x.keys.some(k=>t.includes(k)));
+function answerFor(c, text, intentId){
+  const q=String(text||"").toLowerCase();
+  const hit=intentId
+    ? INTENTS.find(i=>i.id===intentId)
+    : INTENTS.find(i=>(!i.cases||i.cases.includes(c.id))&&i.keys.some(k=>q.includes(k)));
   if(hit){
-    if(state.level<(hit.minLevel||2)) return `Your access level (Level ${state.level}) does not include the section needed to answer that.`;
-    return qaHTML(c.id,hit.a);
+    if(state.level<(hit.min||2)) return t("botLevel",{n:state.level});
+    if(hit.aKey) return qaHTML(c.id, t(hit.aKey));
+    if(hit.id==="hire") return t("botHire");
+    const [dn,tt]=c.progress;
+    if(hit.id==="duration") return c.completed
+      ? t("botDone",{ordered:c.ordered,tt,completed:c.completed})
+      : t("botOpen",{ordered:c.ordered,dn,tt,eta:c.eta?t("candEta",{eta:c.eta}):""});
+    if(hit.id==="due") return t("botDue",{due:c.due,dueIn:c.dueIn});
+    if(hit.id==="eta") return c.eta?t("botEta",{eta:c.eta}):t("botEtaDone",{tt,done:c.completed?` (${c.completed})`:""});
+    if(hit.id==="pending"){
+      const p=c.sections.filter(s=>s.status==="pending").map(s=>secTitle(s.title));
+      return p.length?t("botPending",{list:p.join(", ")}):t("botPendingNone");
+    }
+    if(hit.id==="source") return (c.sources||[]).length
+      ? t("botSources",{n:c.sources.length,list:c.sources.map(s=>s.title).join("; ")})
+      : t("botSourcesNone");
+    if(hit.id==="discrepancy"){
+      const vis=c.sections.filter(s=>state.level>=(SECTION_LEVELS[s.key]||2));
+      const ds=[];vis.forEach(s=>s.findings.forEach(f=>{if(f.kind==="discrepancy")ds.push(f.title)}));
+      const hidden=c.sections.some(s=>state.level<(SECTION_LEVELS[s.key]||2)&&s.findings.some(f=>f.kind==="discrepancy"));
+      if(!ds.length&&!hidden) return t("botNoDisc");
+      const head=ds.length===1?t("botDiscOne",{list:ds.join("; ")}):ds.length?t("botDiscMany",{n:ds.length,list:ds.join("; ")}):t("botNoDiscLevel");
+      return head+(hidden?t("botDiscHidden"):"");
+    }
+    if(hit.id==="status") return t("botStatus",{dn,tt,status:c.adjudication,signal:sigLabel(c.signal),adj:adjText(c)});
   }
-  const [dn,tt]=c.progress;
-  if(/(how long|took|turnaround|duration)/.test(t)) return c.completed
-    ? `The screening was ordered on ${c.ordered} and all ${tt} checks finished on ${c.completed}.`
-    : `The screening was ordered on ${c.ordered}. ${dn} of ${tt} checks are done so far${c.eta?`, with estimated completion ${c.eta}`:""}.`;
-  if(/(due|deadline)/.test(t)) return `This report is due ${c.due} (in ${c.dueIn}).`;
-  if(/(eta|when will|estimated|finish)/.test(t)) return c.eta?`Estimated completion is ${c.eta}.`:`All ${tt} checks are already complete${c.completed?` (finished ${c.completed})`:""}.`;
-  if(/(pending|missing|remaining|left to)/.test(t)){
-    const p=c.sections.filter(s=>s.status==="pending").map(s=>s.title);
-    return p.length?`Still in progress: ${p.join(", ")}.`:`Nothing is pending. All checks are complete.`;
-  }
-  if(/(source|where .*from|document)/.test(t)) return c.sources.length
-    ? `This report draws on ${c.sources.length} verified sources: ${c.sources.map(s=>s.title).join("; ")}. Click any numbered chip in the findings to open one.`
-    : `Source documents are attached to each finding when its check completes. This case has none flagged yet.`;
-  if(/(discrepan|issue|problem|flag|mismatch)/.test(t)){
-    const vis=c.sections.filter(s=>state.level>=(SECTION_LEVELS[s.key]||2));
-    const ds=[];vis.forEach(s=>s.findings.forEach(f=>{if(f.kind==="discrepancy")ds.push(f.title)}));
-    const hidden=c.sections.some(s=>state.level<(SECTION_LEVELS[s.key]||2)&&s.findings.some(f=>f.kind==="discrepancy"));
-    if(!ds.length&&!hidden) return `No discrepancies were found in this report.`;
-    return (ds.length?`${ds.length===1?"One discrepancy":ds.length+" discrepancies"} within your access level: ${ds.join("; ")}.`:`No discrepancies within your access level.`)+(hidden?` Some findings sit in sections above your access level.`:"");
-  }
-  if(t.includes("status")||t.includes("progress")) return `${dn} of ${tt} checks are complete. Status: ${c.adjudication}. Signal: ${SIGNAL_LABEL[c.signal]}. Adjudication ${adjText(c)}.`;
-  if(t.includes("hire")||t.includes("decision")||t.includes("reject")) return `That decision stays with you. I can show the facts and the SLA rule that applies, but adjudication and any adverse action are human calls.`;
-  return `I can only answer from what is in this report and its sources. You can ask about status, timing, pending checks, discrepancies or sources.`;
+  return t("botFallback");
 }
 function chatCard(c){
-  const qs=(CASE_QA[c.id]||[]).filter(x=>state.level>=(x.minLevel||2)).map(x=>x.q);
-  qs.push("What's the status?","How long did this screening take?");
+  const qs=INTENTS.filter(x=>x.qKey&&(!x.cases||x.cases.includes(c.id))&&state.level>=(x.min||2));
   return `
   <section class="section" id="askCard">
-    <div class="sec-head"><h3>Ask this report</h3><span class="chat-note">Answers come only from this report's sources, within your access level. Decisions stay human.</span></div>
+    <div class="sec-head"><h3>${t("askTitle")}</h3><span class="chat-note">${t("askNote")}</span></div>
     <div class="sec-body">
       <div class="chat-log" id="chatLog">
-        <div class="msg ai">Hi! Ask me about ${c.name.split(" ")[0]}'s report. Every answer is grounded in its verified sources.</div>
+        <div class="msg ai">${t("askHi",{name:c.name.split(" ")[0]})}</div>
       </div>
-      <div class="chips-row">${qs.map(t=>`<button data-chatq="${escq(t)}">${escq(t)}</button>`).join("")}</div>
+      <div class="chips-row">${qs.map(x=>`<button data-intent="${x.id}" data-chatq="${escq(t(x.qKey))}">${escq(t(x.qKey))}</button>`).join("")}</div>
       <div class="chat-input">
-        <input id="chatIn" placeholder="Ask about this report" aria-label="Ask about this report">
-        <button id="chatSend">Ask</button>
+        <input id="chatIn" placeholder="${escq(t("askPh"))}" aria-label="${escq(t("askAria"))}">
+        <button id="chatSend">${t("askBtn")}</button>
       </div>
     </div>
   </section>`;
@@ -1245,17 +1280,17 @@ function wireCites(root){
 function wireChat(c){
   const log=document.getElementById("chatLog"), inp=document.getElementById("chatIn");
   if(!log) return;
-  const send=t=>{
-    t=(t||"").trim(); if(!t) return;
-    log.insertAdjacentHTML("beforeend",`<div class="msg me">${escq(t)}</div>`);
-    log.insertAdjacentHTML("beforeend",`<div class="msg ai">${answerFor(c,t)}</div>`);
+  const send=(text,intent)=>{
+    text=(text||"").trim(); if(!text) return;
+    log.insertAdjacentHTML("beforeend",`<div class="msg me">${escq(text)}</div>`);
+    log.insertAdjacentHTML("beforeend",`<div class="msg ai">${answerFor(c,text,intent)}</div>`);
     wireCites(log);
     log.lastElementChild.scrollIntoView({block:"nearest",behavior:"smooth"});
     inp.value="";
   };
   document.getElementById("chatSend").addEventListener("click",()=>send(inp.value));
   inp.addEventListener("keydown",e=>{if(e.key==="Enter")send(inp.value)});
-  document.querySelectorAll("[data-chatq]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.chatq)));
+  document.querySelectorAll("[data-chatq]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.chatq,b.dataset.intent)));
 }
 
 /* =========================================================
@@ -1340,15 +1375,15 @@ async function dl(blob,name){
 }
 const fileSlug=c=>`${c.name.replace(/\s+/g,"_")}_${c.id}`;
 async function zipAll(sel,btn){
-  if(!(window.JSZip&&window.jspdf))return flash(btn,"Export libraries not loaded");
-  const o=btn.textContent;btn.textContent="Preparing ZIP…";
+  if(!(window.JSZip&&window.jspdf))return flash(btn,t("flashExportLibs"));
+  const o=btn.textContent;btn.textContent=t("flashZip");
   try{
     const zip=new JSZip();
     sel.forEach(c=>{zip.file(fileSlug(c)+".pdf",pdfBlob(c))});
     const blob=await zip.generateAsync({type:"blob"});
     dl(blob,"smart-report-reports.zip");
     btn.textContent=o;
-  }catch(err){btn.textContent=o;flash(btn,"Export failed")}
+  }catch(err){btn.textContent=o;flash(btn,t("flashExportFail"))}
 }
 function exportReport(c,btn){
   let printed=false;
@@ -1356,9 +1391,9 @@ function exportReport(c,btn){
   if(!printed){
     try{
       navigator.clipboard.writeText(exportSummary(c))
-        .then(()=>flash(btn,"Summary copied"))
-        .catch(()=>flash(btn,"Export unavailable here"));
-    }catch(err){flash(btn,"Export unavailable here")}
+        .then(()=>flash(btn,t("flashCopied")))
+        .catch(()=>flash(btn,t("flashUnavailable")));
+    }catch(err){flash(btn,t("flashUnavailable"))}
   }
 }
 
@@ -1377,21 +1412,21 @@ function setRole(r){
 }
 btnR.addEventListener("click",()=>setRole("recruiter"));
 btnC.addEventListener("click",()=>setRole("candidate"));
-lvlSelect.addEventListener("change",()=>{state.level=+lvlSelect.value;lvlNote.textContent=LEVEL_NOTES[state.level];updateSlaBtn();render()});
+lvlSelect.addEventListener("change",()=>{state.level=+lvlSelect.value;lvlNote.textContent=t("lvl"+state.level);updateSlaBtn();render()});
 const slaBtn=document.getElementById("slaBtn");
 slaBtn.addEventListener("click",()=>openSLA());
 function updateSlaBtn(){slaBtn.style.display=(state.role==="recruiter"&&state.level>=3)?"inline-block":"none"}
 function watchAction(c){
   const rules=(CASE_ADJ[c.id]||{}).rules||[];
   if(c.signal==="critical"&&rules.includes("4.2")){
-    if(state.level<3) return "Review the date and title mismatch before you decide.";
-    if(!state.ctxReq[c.id]) return "Request context and review the undisclosed record.";
-    return "Review the candidate's reply before any adverse action.";
+    if(state.level<3) return t("actDates");
+    if(!state.ctxReq[c.id]) return t("actCtx");
+    return t("actReply");
   }
-  if(rules.includes("3.2")) return "Confirm the degree date.";
-  if(rules.includes("2.2")) return "Review the employment date gap.";
-  if(c.status==="review") return "This case is waiting for your review.";
-  return "This screening is critical.";
+  if(rules.includes("3.2")) return t("actDegree");
+  if(rules.includes("2.2")) return t("actEmploy");
+  if(c.status==="review") return t("actWait");
+  return t("actCritical");
 }
 function watchItems(){
   return CASES.filter(c=>{
@@ -1419,24 +1454,25 @@ function renderWatcher(){
   if(crit) btn.classList.add("critical");
   else if(n) btn.classList.add("attention");
   num.textContent=n?String(n):"";
-  const msg=!n?"Queue is clear.":crit?`${crit} critical · ${n} need you`:`${n} need you`;
+  const msg=!n?t("watchClear"):crit?t("watchCrit",{crit,n}):t("watchNeed",{n});
   tip.textContent=msg;
   if(mouth) mouth.setAttribute("d", crit
     ? "M12.2 22.4c1.2-.8 2.3-1.2 3.8-1.2s2.6.4 3.8 1.2"
     : n
       ? "M12.5 21.4h7"
       : "M12.5 21.2c1.1.9 2.2 1.3 3.5 1.3s2.4-.4 3.5-1.3");
-  const label=!n?"Status bot. Queue is clear.":crit?`Status bot. ${crit} critical, ${n} need you.`: `Status bot. ${n} need you.`;
+  const label=!n?t("watchAriaClear"):crit?t("watchAriaCrit",{crit,n}):t("watchAriaNeed",{n});
   btn.setAttribute("aria-label",label);
   btn.setAttribute("aria-expanded",state.watchOpen?"true":"false");
+  pop.setAttribute("aria-label", t("watchRegion"));
   pop.hidden=!state.watchOpen;
   pop.innerHTML=items.length?items.map(c=>`
     <button class="watch-item" type="button" data-watch="${c.id}">
-      <span class="watch-item-top"><strong>${escq(c.name)}</strong>${badge(c.signal==="critical"?"critical":"attention",c.signal==="critical"?"Critical":"Needs you")}</span>
+      <span class="watch-item-top"><strong>${escq(c.name)}</strong>${badge(c.signal==="critical"?"critical":"attention",c.signal==="critical"?t("sigCritical"):t("needReview"))}</span>
       <span class="watch-act">${escq(watchAction(c))}</span>
-      <span class="watch-due">Due in ${escq(c.dueIn)}</span>
+      <span class="watch-due">${escq(t("dueIn",{when:c.dueIn}))}</span>
     </button>`).join("")
-    :`<p class="watch-empty">Queue is clear. I'll speak if a case turns critical or needs you.</p>`;
+    :`<p class="watch-empty">${t("watchEmpty")}</p>`;
 }
 function render(){
   renderWatcher();
@@ -1463,8 +1499,18 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&state.watchOpen){state.watchOpen=false;renderWatcher();watchBtn.focus()}
 });
-lvlNote.textContent=LEVEL_NOTES[state.level];
+lvlNote.textContent=t("lvl"+state.level);
 updateSlaBtn();
+const langSel=document.getElementById("lang");
+LANGS.forEach(l=>{
+  const o=document.createElement("option");
+  o.value=l.id; o.textContent=l.label;
+  langSel.appendChild(o);
+});
+langSel.value=lang;
+langSel.addEventListener("change",()=>{setLang(langSel.value);applyChrome();render()});
+setLang(lang);
+applyChrome();
 
 const INTAKE_MS=60000;
 const INTAKE_POOL=[
@@ -1491,9 +1537,9 @@ let intakeSeq=0, intakeCursor=0, nextIntakeAt=Date.now()+INTAKE_MS;
 const intakeLog=[];
 let intakeRunning=true, intakeRemain=INTAKE_MS;
 function intakeClockText(){
-  if(!intakeRunning) return "Paused";
+  if(!intakeRunning) return t("paused");
   const s=Math.max(0,Math.ceil((nextIntakeAt-Date.now())/1000));
-  return `Next screening in ${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+  return t("nextIn",{time:`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`});
 }
 function setIntakeRunning(on){
   if(on===intakeRunning) return;
@@ -1518,18 +1564,18 @@ function wireIntake(){
 function intakeHTML(){
   const rows=intakeLog.length?intakeLog.map(x=>`
     <div class="intake-row">
-      ${badge(x.signal,SIGNAL_LABEL[x.signal])}
-      <span class="who"><strong>${escq(x.name)}</strong><span>${escq(x.reason)}</span></span>
-      <em>${x.id===state.freshId?"Just in":"Received"}</em>
-    </div>`).join(""):`<p class="intake-empty">Waiting for the next screening. The status bot updates when it arrives.</p>`;
-  return `<section class="intake${intakeRunning?"":" paused"}" aria-label="Live intake">
+      ${badge(x.signal,sigLabel(x.signal))}
+      <span class="who"><strong>${escq(x.name)}</strong><span>${escq(phrase(x.reason))}</span></span>
+      <em>${x.id===state.freshId?t("justIn"):t("received")}</em>
+    </div>`).join("")    :`<p class="intake-empty">${t("waiting")}</p>`;
+  return `<section class="intake${intakeRunning?"":" paused"}" aria-label="${escq(t("intakeTitle"))}">
     <div class="intake-head">
-      <div><h3>Live intake</h3><p>A new screening arrives every minute. The status bot at the top receives it.</p></div>
+      <div><h3>${t("intakeTitle")}</h3><p>${t("intakeSub")}</p></div>
       <div class="intake-side">
         <b id="intakeClock">${intakeClockText()}</b>
         <div class="intake-ctrls">
-          <button type="button" class="ghost-btn sm" id="intakeStart"${intakeRunning?" disabled":""}>Start</button>
-          <button type="button" class="ghost-btn sm" id="intakeStop"${intakeRunning?"":" disabled"}>Stop</button>
+          <button type="button" class="ghost-btn sm" id="intakeStart"${intakeRunning?" disabled":""}>${t("start")}</button>
+          <button type="button" class="ghost-btn sm" id="intakeStop"${intakeRunning?"":" disabled"}>${t("stop")}</button>
         </div>
       </div>
     </div>
@@ -1553,7 +1599,7 @@ function announceIntake(c){
   const tip=document.getElementById("watchTip");
   if(!btn||state.role!=="recruiter") return;
   btn.classList.add("incoming");
-  if(tip) tip.textContent=`New screening · ${c.name} · ${SIGNAL_LABEL[c.signal]}`;
+  if(tip) tip.textContent=t("newIntake",{name:c.name,signal:sigLabel(c.signal)});
   clearTimeout(announceIntake.timer);
   announceIntake.timer=setTimeout(()=>{btn.classList.remove("incoming");renderWatcher()},5000);
 }
