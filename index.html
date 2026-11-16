@@ -1191,8 +1191,8 @@ function openSLA(highlight=[]){
     </div>`;
   document.body.classList.add("drawer-open");
   document.getElementById("dwClose").addEventListener("click",closeDrawer);
-  const t=highlight.length?document.getElementById("rule-"+highlight[0]):null;
-  if(t)t.scrollIntoView({block:"center",behavior:"smooth"});
+  const ruleEl=highlight.length?document.getElementById("rule-"+highlight[0]):null;
+  if(ruleEl)ruleEl.scrollIntoView({block:"center",behavior:"smooth"});
   drawer.querySelector(".dw-close").focus({preventScroll:true});
 }
 
