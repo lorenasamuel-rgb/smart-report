@@ -18,6 +18,7 @@ test or development data, databases, extracts or internal datasets are used anyw
 
 | Path | What it is |
 | --- | --- |
+| `MANUAL.md` | User guide for the queue, report, access levels, adjudication, candidate view, exports, and the live agent. |
 | `index.html` | Static clickable prototype: queue, dashboard, report with citations, SLA panel, adjudication, candidate portal, exports. Works with no backend. |
 | `agent.html` | Live agent MVP: editable fictional documents, real LLM analysis with citation gate and deterministic SLA matrix, grounded chat. Needs the API below. |
 | `api/analyze.js` | Vercel serverless function: LLM extraction with verbatim citations, citation gate in code, SLA matrix in code, signal + rule ids. |
