@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Report · 5-minute pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2063;
+  --ink-soft:#3c4076;
+  --blue:#2f62f6;
+  --blue-dark:#1e46c0;
+  --peri:#aebcec;
+  --peri-pale:#e7ebfa;
+  --peri-ghost:#f4f6fd;
+  --pink:#e8336e;
+  --pink-soft:#fdeaf1;
+  --orange:#e0731d;
+  --orange-soft:#fcefe2;
+  --green:#15895c;
+  --green-soft:#e3f4ec;
+  --line:#dfe4f4;
+  --card:#ffffff;
+  --shadow:0 1px 2px rgba(29,32,99,.06), 0 16px 40px -20px rgba(29,32,99,.28);
+  --font:'Lato', system-ui, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#12143a;
+  color:var(--ink);
+  font-family:var(--font);
+  overflow:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.deck{height:100%;position:relative}
+.slide{
+  position:absolute;inset:0;
+  display:none;
+  background:var(--peri-ghost);
+  overflow:hidden;
+}
+.slide.active{display:flex}
+.frame{
+  width:100%;
+  height:100%;
+  padding:5.2vh 5.5vw 8vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+}
+.fan{
+  position:absolute;right:-6vw;bottom:-10vh;width:min(42vw,520px);height:auto;
+  pointer-events:none;z-index:0;
+}
+h1{
+  font-weight:900;letter-spacing:-.03em;line-height:.98;
+  font-size:clamp(48px,6.6vw,92px);color:var(--ink);
+  max-width:16ch;
+}
+h2{
+  font-weight:900;letter-spacing:-.03em;line-height:1.05;
+  font-size:clamp(32px,3.5vw,52px);color:var(--ink);
+  max-width:34ch;
+}
+.team-line{margin-top:8px;font-size:14px;font-weight:700;color:var(--ink-soft)}
+.dek{
+  margin-top:2.2vh;max-width:38ch;
+  font-size:clamp(18px,1.7vw,26px);line-height:1.35;color:var(--ink-soft);
+}
+.grow{flex:1;min-height:0}
+.foot{
+  position:absolute;left:5.5vw;bottom:3.2vh;
+  font-size:13px;font-weight:700;color:var(--ink-soft);z-index:2;
+}
+.foot b{color:var(--ink)}
+
+/* title */
+.title-slide .frame{justify-content:flex-end;padding-bottom:12vh}
+.wordmark{font-weight:900;font-size:22px;letter-spacing:-.03em;margin-bottom:2vh}
+.wordmark em{font-style:normal;color:var(--blue)}
+.meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:3vh}
+.pill{
+  background:#fff;border:1px solid var(--line);border-radius:999px;
+  padding:8px 14px;font-weight:700;font-size:14px;color:var(--ink);
+  box-shadow:var(--shadow);
+}
+
+/* problem */
+.problem-grid{
+  margin-top:3vh;
+  display:grid;grid-template-columns:1.05fr .95fr;gap:3vw;
+  align-items:start;
+}
+.beats{display:flex;flex-direction:column;gap:14px}
+.beat{
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:16px 18px;box-shadow:var(--shadow);
+  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+}
+.beat .n{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--ink);color:#fff;font-weight:900;
+  display:grid;place-items:center;font-size:14px;
+}
+.beat strong{display:block;font-size:16px;margin-bottom:2px}
+.beat p{font-size:15px;line-height:1.35;color:var(--ink-soft)}
+.case{
+  background:#fff;border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);padding:22px 22px 18px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--pink-soft);color:#9c123e;
+  font-weight:900;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+  border-radius:999px;padding:5px 10px;width:max-content;
+}
+.badge i{width:8px;height:8px;border-radius:50%;background:#9c123e;display:block}
+.case h3{font-size:28px;font-weight:900;letter-spacing:-.02em}
+.case .role{color:var(--ink-soft);font-weight:700;margin-top:-6px}
+.why{background:var(--peri-ghost);border-radius:12px;padding:12px 14px}
+.why .k{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-dark)}
+.why p{margin-top:4px;font-size:15px;line-height:1.4}
+.case-foot{margin-top:4px;font-size:12px;color:var(--ink-soft);font-weight:700}
+
+/* market */
+.stats{
+  margin-top:3vh;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:18px;
+  align-items:start;
+}
+.stat{
+  background:#fff;border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);padding:22px 20px 18px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.stat .tag{
+  font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-dark);
+}
+.stat .num{
+  font-weight:900;letter-spacing:-.04em;line-height:.9;
+  font-size:clamp(42px,4.6vw,68px);color:var(--ink);
+}
+.stat p{font-size:15.5px;line-height:1.4;color:var(--ink-soft)}
+.stat .src{padding-top:8px;font-size:12px;font-weight:700;color:var(--ink)}
+.source-line{margin-top:1.2vh;font-size:12px;color:var(--ink-soft);max-width:90ch}
+.service-call{
+  margin-top:16px;
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:16px 18px 14px;
+}
+.service-call .tag{
+  font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-dark);
+}
+.service-call p{margin-top:6px;font-size:16px;line-height:1.4;color:var(--ink-soft)}
+.service-call strong{color:var(--ink)}
+
+/* six */
+.six{
+  margin-top:2.6vh;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+}
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:16px 16px 14px;
+  display:flex;flex-direction:column;gap:6px;min-height:0;
+}
+.card h3{
+  font-size:17px;font-weight:900;letter-spacing:-.02em;
+  display:flex;align-items:baseline;gap:10px;
+}
+.card h3 span{color:var(--blue-dark);font-size:12px;letter-spacing:.08em}
+.card p{font-size:14px;line-height:1.35;color:var(--ink-soft)}
+
+/* path */
+.path{
+  margin-top:3vh;
+  display:grid;grid-template-columns:1fr 1fr;gap:18px 36px;
+  align-content:start;
+}
+.step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.step .n{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--blue);color:#fff;font-weight:900;
+  display:grid;place-items:center;
+}
+.step strong{display:block;font-size:16px}
+.step span{display:block;font-size:14px;color:var(--ink-soft);line-height:1.35;margin-top:2px}
+
+/* diff */
+.diff{
+  margin-top:2.6vh;
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;
+  align-items:start;
+}
+.col{
+  background:#fff;border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);padding:18px 18px 8px;
+  display:flex;flex-direction:column;
+}
+.col.ours{border-color:#c9d4fb;background:linear-gradient(180deg,#fff,#f7f8ff)}
+.col h3{font-size:28px;font-weight:900;letter-spacing:-.02em;margin-bottom:8px}
+.col p{font-size:18px;line-height:1.4;color:var(--ink-soft);padding-bottom:10px}
+.col li{
+  list-style:none;padding:9px 0;border-top:1px solid var(--line);
+  font-size:14.5px;line-height:1.35;color:var(--ink);
+}
+.col li b{font-weight:900}
+.col .hd{
+  font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--blue-dark);margin-bottom:4px;
+}
+.cmp{margin-top:3vh;display:flex;flex-direction:column;gap:10px}
+.cmp-h,.cmp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cmp-h span{
+  font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-dark);
+}
+.cmp-row span{
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;font-weight:700;font-size:16px;line-height:1.35;
+  box-shadow:var(--shadow);
+}
+.cmp-row span:last-child{border-color:#c9d4fb;background:#f7f8ff}
+
+/* guard */
+.guards{
+  margin-top:2.6vh;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  align-items:start;
+}
+.guard{
+  background:#fff;border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);padding:20px 18px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.guard .num{font-weight:900;font-size:13px;letter-spacing:.14em;color:var(--blue-dark)}
+.guard h3{font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.15}
+.guard p{font-size:15px;line-height:1.4;color:var(--ink-soft)}
+.live{
+  margin-top:1.8vh;
+  background:var(--ink);color:#fff;border-radius:14px;
+  padding:12px 16px;font-size:15px;line-height:1.4;
+  display:flex;gap:12px;align-items:center;
+}
+.live b{color:#fff}
+
+/* close */
+.close-slide .frame{justify-content:flex-end;padding-bottom:14vh}
+.close-slide h1{max-width:14ch}
+.close-slide .dek{max-width:28ch}
+
+/* chrome */
+.chrome{
+  position:fixed;right:22px;bottom:18px;z-index:20;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:999px;padding:6px 8px 6px 14px;
+  box-shadow:var(--shadow);color:var(--ink);
+}
+.chrome .count{font-weight:900;font-size:13px;min-width:42px}
+.chrome button{
+  width:32px;height:32px;border-radius:50%;background:var(--peri-pale);font-weight:900;
+}
+.chrome button:hover{background:var(--peri)}
+.help{
+  font-size:12px;font-weight:700;color:var(--ink-soft);padding:0 6px 0 4px;
+}
+
+.clock{
+  display:none;position:fixed;top:18px;right:22px;z-index:20;
+  background:var(--ink);color:#fff;border-radius:999px;
+  padding:8px 14px;font-weight:900;letter-spacing:.04em;font-variant-numeric:tabular-nums;
+}
+body.timer-on .clock{display:block}
+.clock.over{background:var(--pink)}
+.clock .hint{font-weight:700;opacity:.8;margin-left:8px}
+
+.notes{
+  display:none;position:fixed;left:18px;right:18px;bottom:64px;z-index:19;
+  background:rgba(18,20,58,.94);color:#fff;border-radius:16px;
+  padding:16px 18px 14px;max-height:34vh;overflow:auto;
+}
+body.show-notes .notes{display:block}
+.notes .who{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#aebcec;margin-bottom:6px}
+.notes p{font-size:15px;line-height:1.45}
+.notes .cue{margin-top:8px;font-size:13px;color:#c9d4fb}
+
+@media (max-width:900px){
+  .problem-grid,.stats,.six,.path,.diff,.guards{grid-template-columns:1fr}
+  .six{grid-template-rows:none}
+  h1{font-size:42px}
+  h2{font-size:30px}
+  .frame{overflow:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <section class="slide title-slide active" data-end="18" data-notes="title">
+    <svg class="fan" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M200 0 A200 200 0 0 0 0 200 L200 200 Z" fill="#e7ebfa"/>
+      <path d="M200 48 A152 152 0 0 0 48 200 L200 200 Z" fill="#aebcec"/>
+      <path d="M200 100 A100 100 0 0 0 100 200 L200 200 Z" fill="#2f62f6" opacity=".85"/>
+    </svg>
+    <div class="frame">
+      <div class="wordmark">Smart <em>Report</em></div>
+      <h1>One report. One alert.</h1>
+      <p class="dek">The case that needs a person is the first one a recruiter opens. Every reason opens back to a source and to the rule that routed it.</p>
+      <div class="meta-row">
+        <span class="pill">Lorena Barros · Team CocreateHub</span>
+        <span class="pill">Accurate Hackathon 2026</span>
+        <span class="pill">5 minutes</span>
+        <span class="pill">Fictional data only</span>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · risk signaling</span></div>
+  </section>
+
+  <section class="slide" data-end="78" data-notes="problem">
+    <div class="frame">
+      <h2>The critical case waits in line.</h2>
+      <div class="problem-grid">
+        <div class="beats">
+          <div class="beat"><span class="n">1</span><div><strong>Who feels it</strong><p>HR and talent teams, reading one finished report after another.</p></div></div>
+          <div class="beat"><span class="n">2</span><div><strong>Why it matters</strong><p>Nothing marks which case needs a person first. A critical flag sits behind routine ones.</p></div></div>
+          <div class="beat"><span class="n">3</span><div><strong>What it costs</strong><p>The hiring decision slows down. The candidate waits on a queue that looks flat.</p></div></div>
+        </div>
+        <article class="case">
+          <span class="badge"><i></i> Critical</span>
+          <h3>Jordan Avery</h3>
+          <div class="role">Senior Financial Analyst · Chicago · due in 2 days</div>
+          <div class="why">
+            <div class="k">Why this signal</div>
+            <p>County search found a 2023 misdemeanor. The application says “No.” The last employer confirms a different title and a start date 14 months later.</p>
+          </div>
+          <p class="case-foot">Self-generated example. A cleared case in the same queue looks finished until someone reads both.</p>
+        </article>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · the problem</span></div>
+  </section>
+
+  <section class="slide" data-end="118" data-notes="market">
+    <div class="frame">
+      <h2>Coverage consolidated. Interpretation did not.</h2>
+      <div class="stats">
+        <article class="stat">
+          <div class="tag">Their deal</div>
+          <div class="num">$2.2B</div>
+          <p>First Advantage acquired Sterling in 2024 and became the largest global screening provider.</p>
+          <div class="src">The scale war is largely over.</div>
+        </article>
+        <article class="stat">
+          <div class="tag">Their customers</div>
+          <div class="num">75%</div>
+          <p>Checkr Assess clients report moving adjudication effort off manual review with AI filters and custom rules.</p>
+          <div class="src">Reported by Checkr. Up to 75%.</div>
+        </article>
+      </div>
+      <div class="service-call">
+        <div class="tag">Accurate’s service line</div>
+        <p><strong>Clients call because they cannot interpret the screening.</strong> The result is on the report. The SLA requirement that explains it is missing, so client service spends the call reading the rule back.</p>
+      </div>
+      <p class="source-line">$2.2B and 75% are reported by First Advantage and Checkr. The service-line demand is the gap on Accurate’s own report.</p>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · market</span></div>
+  </section>
+
+  <section class="slide" data-end="162" data-notes="shipped">
+    <div class="frame">
+      <h2>Six things a recruiter needs before a decision.</h2>
+      <div class="six">
+        <article class="card">
+          <h3><span>01</span> A ranked queue</h3>
+          <p>Critical first. The reason is a sentence on the row, so the right report is the one they open.</p>
+        </article>
+        <article class="card">
+          <h3><span>02</span> Only what they may see</h3>
+          <p>Levels 1 to 5. Criminal detail locks below Level 3. Exports follow the same tier.</p>
+        </article>
+        <article class="card">
+          <h3><span>03</span> Plain language</h3>
+          <p>Each finding shows what the candidate stated beside what Smart Report verified.</p>
+        </article>
+        <article class="card">
+          <h3><span>04</span> The candidate’s side</h3>
+          <p>Request candidate context sits on the criminal finding. Adverse action stays locked until that ask goes out.</p>
+        </article>
+        <article class="card">
+          <h3><span>05</span> An ETA they can see</h3>
+          <p>Estimated completion is on the queue and in the candidate portal, next to complete or not complete.</p>
+        </article>
+        <article class="card">
+          <h3><span>06</span> A human decision</h3>
+          <p>The model extracts. Code stamps the signal and the SLA rule. A person adjudicates.</p>
+        </article>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · what ships</span></div>
+  </section>
+
+  <section class="slide" data-end="212" data-notes="path">
+    <div class="frame">
+      <h2>Jordan’s case, in six clicks.</h2>
+      <div class="path">
+        <div class="step"><span class="n">1</span><div><strong>Open the queue</strong><span>Jordan is first. The reason is already on the row.</span></div></div>
+        <div class="step"><span class="n">2</span><div><strong>Open the report</strong><span>Candidate stated, beside Smart Report verified.</span></div></div>
+        <div class="step"><span class="n">3</span><div><strong>Click citation 5</strong><span>The Cook County record opens. The charge is highlighted.</span></div></div>
+        <div class="step"><span class="n">4</span><div><strong>Click SLA 4.2</strong><span>Undisclosed record. Individualized assessment before any adverse action.</span></div></div>
+        <div class="step"><span class="n">5</span><div><strong>Request candidate context</strong><span>Adverse action unlocks only after the invitation goes out.</span></div></div>
+        <div class="step"><span class="n">6</span><div><strong>Candidate view, then Level 2</strong><span>Jordan sees status and ETA. Criminal detail locks.</span></div></div>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · the path</span></div>
+  </section>
+
+  <section class="slide" data-end="252" data-notes="diff">
+    <div class="frame">
+      <h2>What they sell. What we add.</h2>
+      <div class="cmp">
+        <div class="cmp-h"><span>Checkr, First Advantage, HireRight</span><span>Smart Report</span></div>
+        <div class="cmp-row"><span>Triage what needs a person</span><span>The reason is on the case</span></div>
+        <div class="cmp-row"><span>A plain-language charge</span><span>Stated beside verified</span></div>
+        <div class="cmp-row"><span>Ask the candidate for context</span><span>Adverse action locked until that ask</span></div>
+        <div class="cmp-row"><span>The result on the report</span><span>The source and the SLA rule</span></div>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · the difference</span></div>
+  </section>
+
+  <section class="slide" data-end="282" data-notes="trust">
+    <div class="frame">
+      <h2>Three checks in the room.</h2>
+      <p class="team-line">Lorena Barros · Team CocreateHub</p>
+      <div class="guards">
+        <article class="guard">
+          <div class="num">01</div>
+          <h3>Live agent</h3>
+          <p>Delete the court record and run it again. The critical signal and SLA 4.2 leave with the document.</p>
+        </article>
+        <article class="guard">
+          <div class="num">02</div>
+          <h3>The excerpt has to be real</h3>
+          <p>The citation gate checks the quote against the document. Unsourced findings are dropped and counted, in code.</p>
+        </article>
+        <article class="guard">
+          <div class="num">03</div>
+          <h3>The hiring call stays human</h3>
+          <p>Ask the report whether to hire. The assistant states the facts and the rule, then leaves the decision with you.</p>
+        </article>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · trust</span></div>
+  </section>
+
+  <section class="slide close-slide" data-end="300" data-notes="close">
+    <svg class="fan" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M200 0 A200 200 0 0 0 0 200 L200 200 Z" fill="#e7ebfa"/>
+      <path d="M200 48 A152 152 0 0 0 48 200 L200 200 Z" fill="#aebcec"/>
+      <path d="M200 100 A100 100 0 0 0 100 200 L200 200 Z" fill="#e8336e" opacity=".9"/>
+    </svg>
+    <div class="frame">
+      <h1>Start with the case that matters.</h1>
+      <p class="dek">End with a person who can point at the source and at the rule.</p>
+      <div class="meta-row">
+        <span class="pill">Lorena Barros · Team CocreateHub</span>
+      </div>
+    </div>
+    <div class="foot"><span><b>Smart Report</b> · Accurate Hackathon 2026</span></div>
+  </section>
+
+</div>
+
+<div class="clock" id="clock">0:00</div>
+<aside class="notes" id="notes" aria-live="polite"></aside>
+<div class="chrome">
+  <span class="help" id="help">← → · N notes · T timer</span>
+  <span class="count" id="count">1 / 8</span>
+  <button type="button" id="prev" aria-label="Previous slide">←</button>
+  <button type="button" id="next" aria-label="Next slide">→</button>
+</div>
+
+<script>
+const NOTES = {
+  title: {
+    who: "0:00 – 0:18 · opener",
+    say: "Smart Report is a risk signal for background screening. One report, one alert. The case that needs a person is the first one the recruiter opens, and every reason on that case opens back to a source and to the rule that routed it.",
+    cue: "If two people: Speaker A takes this slide and the problem."
+  },
+  problem: {
+    who: "0:18 – 1:18 · this is the 30-point slide. Do not rush it.",
+    say: "Accurate’s problem is manual review. A recruiter opens a report and scans dozens of lines for the one that matters. Nothing says which case needs a person first, so a critical flag waits behind routine ones. The hire slows. The candidate waits. Jordan Avery is fictional, and he is the example. Senior financial analyst, Chicago. The report is complete and due in two days. County search found a 2023 misdemeanor theft. His application says no. His last employer confirms a different title and a start date fourteen months later. In a flat queue he looks like every other finished report, including the engineer who already cleared. Someone still has to notice.",
+    cue: "Stay on the example. Judges asked for who, why, and one real-life case."
+  },
+  market: {
+    who: "1:18 – 1:58 · market",
+    say: "Two market facts, then the one Accurate feels. In 2024 First Advantage bought Sterling, a screening company, for 2.2 billion dollars. Checkr Assess clients report moving up to 75 percent of adjudication effort off manual review. Accurate feels the same gap on the service line. Clients call because they cannot interpret the screening. The result is on the report. The SLA requirement that explains it is missing, so the agent spends the call reading the rule back. Put that requirement on the finding, and the call has nothing left to explain.",
+    cue: "Sterling is a screening company, same category as Accurate. The report is the output. Do not invent a percentage for the call volume."
+  },
+  shipped: {
+    who: "1:58 – 2:42 · what is already built",
+    say: "Six things sit in the prototype you can click today. The queue is ranked, critical first, with the reason on the row. Access levels hide what that recruiter cannot consider. Criminal detail locks below level three. Every finding is what the candidate stated beside what was verified. On a criminal hit, Request candidate context is on the finding, and adverse action stays locked until that ask goes out. The ETA is on the queue and in the candidate portal. The model extracts. Code stamps the signal and the rule. A person adjudicates.",
+    cue: "ETA and fair-chance context are already in the demo. Present them as clicks, not as a roadmap."
+  },
+  path: {
+    who: "2:42 – 3:32 · the demo path. Switch to the prototype if it is one tab away.",
+    say: "The path is Jordan. Open the queue: he is first, and the reason is on the row. Open the report: stated beside verified. Click citation 5: the Cook County record, with the charge highlighted. Click SLA 4.2: an undisclosed record needs an individualized assessment before any adverse action. Click Request candidate context: only then does adverse action unlock. Switch to the candidate view: status and ETA, and he can reply. Drop to level 2: the criminal section locks.",
+    cue: "If you click it live, let the screen talk and skip reading every step."
+  },
+  diff: {
+    who: "3:32 – 4:12 · the angle",
+    say: "Four pairs. They triage what needs a person. We put the reason on the case. They turn the record into a plain-language charge. We show what the candidate stated beside what was verified. They can ask the candidate for context. We keep adverse action locked until that ask goes out. They show the result. We open the source and the SLA rule that explains it. That last pair is what client service is reading back on the phone.",
+    cue: "Read across, one pair at a time. The last row is the difference."
+  },
+  trust: {
+    who: "4:12 – 4:42 · feasibility",
+    say: "Three checks. On the live agent, delete the court record and run it again. The critical signal and rule 4.2 leave with the document. A finding survives only when the excerpt is actually in the document. Ask whether to hire, and the assistant stops.",
+    cue: "If the key is not loaded, stay on the clickable prototype and describe this test."
+  },
+  close: {
+    who: "4:42 – 5:00 · land it, then open the queue.",
+    say: "A faster hire starts with the case that matters. It ends with a person who can point at the source and at the rule. I’m Lorena Barros, Team CocreateHub. We’ll open Jordan’s queue.",
+    cue: "Stop talking. Click the prototype. Name each teammate’s piece if you have not already."
+  }
+};
+
+const slides = [...document.querySelectorAll(".slide")];
+let current = 1;
+const notesEl = document.getElementById("notes");
+const clockEl = document.getElementById("clock");
+let started = 0;
+let timerOn = false;
+let raf = 0;
+
+function pad(n){return String(n).padStart(2,"0")}
+function fmt(s){
+  s = Math.max(0, Math.floor(s));
+  return Math.floor(s/60) + ":" + pad(s%60);
+}
+function renderNotes(){
+  const key = slides[current-1].dataset.notes;
+  const n = NOTES[key];
+  notesEl.innerHTML = `<div class="who">${n.who}</div><p>${n.say}</p><div class="cue">${n.cue}</div>`;
+}
+function show(n){
+  current = Math.min(slides.length, Math.max(1, n));
+  slides.forEach((s,i)=>s.classList.toggle("active", i===current-1));
+  document.getElementById("count").textContent = current + " / " + slides.length;
+  history.replaceState(null, "", "#" + current);
+  renderNotes();
+}
+function tick(){
+  if(!timerOn) return;
+  const elapsed = (performance.now() - started) / 1000;
+  const end = Number(slides[current-1].dataset.end);
+  clockEl.textContent = fmt(elapsed);
+  clockEl.classList.toggle("over", elapsed > 300);
+  const behind = elapsed > end + 6;
+  clockEl.innerHTML = fmt(elapsed) + (behind ? `<span class="hint">next slide</span>` : `<span class="hint">until ${fmt(end)}</span>`);
+  raf = requestAnimationFrame(tick);
+}
+function toggleTimer(){
+  timerOn = !timerOn;
+  document.body.classList.toggle("timer-on", timerOn);
+  if(timerOn){
+    started = performance.now();
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  }else{
+    cancelAnimationFrame(raf);
+    clockEl.textContent = "0:00";
+  }
+}
+function toggleNotes(){
+  document.body.classList.toggle("show-notes");
+}
+
+document.getElementById("next").addEventListener("click", ()=>show(current+1));
+document.getElementById("prev").addEventListener("click", ()=>show(current-1));
+document.addEventListener("keydown", (e)=>{
+  const k = e.key;
+  if(k==="ArrowRight" || k==="PageDown" || k===" "){ e.preventDefault(); show(current+1); }
+  else if(k==="ArrowLeft" || k==="PageUp" || k==="Backspace"){ e.preventDefault(); show(current-1); }
+  else if(k==="Home"){ show(1); }
+  else if(k==="End"){ show(slides.length); }
+  else if(k==="n" || k==="N"){ toggleNotes(); }
+  else if(k==="t" || k==="T"){ toggleTimer(); }
+  else if(/^[1-8]$/.test(k)){ show(Number(k)); }
+});
+
+const fromHash = Number((location.hash||"").slice(1));
+show(fromHash>=1 && fromHash<=slides.length ? fromHash : 1);
+</script>
+</body>
+</html>

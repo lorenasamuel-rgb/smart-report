@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Report · Risk Signaling &amp; Report Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2063;          /* Smart Report deep navy */
+  --ink-soft:#3c4076;
+  --blue:#2f62f6;         /* bright blue */
+  --blue-dark:#1e46c0;
+  --peri:#aebcec;         /* periwinkle */
+  --peri-pale:#e7ebfa;
+  --peri-ghost:#f4f6fd;
+  --pink:#e8336e;         /* critical signal (Smart Report slide accent) */
+  --pink-soft:#fdeaf1;
+  --orange:#e0731d;       /* attention (Smart Report secondary burst) */
+  --orange-soft:#fcefe2;
+  --green:#15895c;
+  --green-soft:#e3f4ec;
+  --line:#dfe4f4;
+  --card:#ffffff;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(29,32,99,.06),0 8px 24px -12px rgba(29,32,99,.12);
+  --font-display:'Lato',sans-serif;
+  --font-body:'Lato',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{
+  font-family:var(--font-body);color:var(--ink);background:var(--peri-ghost);
+  font-size:14px;line-height:1.5;min-height:100vh;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+
+/* ---------- decorative bursts (Smart Report quarter-fan motif) ---------- */
+.burst{position:fixed;z-index:0;pointer-events:none;opacity:.55}
+.burst.tr{top:-40px;right:-40px;width:240px}
+.burst.bl{bottom:-50px;left:-50px;width:280px;transform:rotate(180deg)}
+@media(max-width:760px){.burst{display:none}}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);
+}
+.hd-top{
+  max-width:1120px;margin:0 auto;padding:14px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.wordmark{font-family:var(--font-display);font-weight:900;font-size:24px;letter-spacing:-.5px;color:var(--ink)}
+.wordmark em{font-style:normal;color:var(--blue)}
+.product-chip{
+  font-family:var(--font-display);font-weight:600;font-size:13px;color:var(--blue-dark);
+  background:var(--peri-pale);border:1px solid var(--peri);border-radius:999px;padding:3px 12px;
+}
+.proto-tag{font-size:12px;color:var(--ink-soft)}
+.watch-wrap{margin-left:auto;display:flex;align-items:center;gap:10px;position:relative}
+.watch-wrap[hidden]{display:none}
+.watch-orb{
+  position:relative;
+  width:48px;height:48px;border-radius:50%;flex:none;
+  display:grid;place-items:center;
+  background:var(--green-soft);border:2px solid var(--green);color:var(--green);
+  box-shadow:var(--shadow);
+}
+.watch-orb .bot-face{display:block}
+.watch-orb .watch-num{
+  position:absolute;top:-4px;right:-4px;
+  min-width:18px;height:18px;padding:0 4px;
+  border-radius:999px;border:2px solid #fff;
+  background:var(--green);color:#fff;
+  font-family:var(--font-display);font-weight:900;font-size:11px;line-height:14px;
+}
+.watch-orb .watch-num:empty{display:none}
+.watch-orb.attention{background:var(--orange-soft);border-color:var(--orange);color:var(--orange)}
+.watch-orb.attention .watch-num{background:var(--orange)}
+.watch-orb.critical{background:var(--pink-soft);border-color:var(--pink);color:var(--pink)}
+.watch-orb.critical .watch-num{background:var(--pink)}
+.watch-orb:hover{transform:translateY(-1px)}
+@keyframes intakePop{0%{transform:scale(1)}35%{transform:scale(1.12)}100%{transform:scale(1)}}
+.watch-orb.incoming{animation:intakePop .7s ease 2}
+.watch-tip{
+  position:absolute;top:calc(100% + 10px);right:0;z-index:41;
+  width:max-content;max-width:220px;
+  padding:8px 12px;border-radius:12px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);
+  color:var(--ink);font-size:13px;font-weight:700;line-height:1.3;text-align:left;
+  pointer-events:none;visibility:hidden;
+}
+.watch-orb:hover .watch-tip,
+.watch-orb:focus-visible .watch-tip{visibility:visible}
+.watch-orb[aria-expanded="true"] .watch-tip{visibility:hidden}
+.watch-pop{
+  position:absolute;top:calc(100% + 10px);right:0;z-index:40;
+  width:min(360px,calc(100vw - 32px));
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:6px;
+}
+.watch-pop[hidden]{display:none}
+.watch-item{display:block;width:100%;text-align:left;border-radius:12px;padding:10px 12px}
+.watch-item:hover{background:var(--peri-ghost)}
+.watch-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.watch-item-top strong{font-size:14px}
+.watch-act{display:block;margin-top:4px;font-size:13px;color:var(--ink-soft);font-weight:400}
+.watch-due{display:block;margin-top:2px;font-size:12px;font-weight:700;color:var(--ink)}
+.watch-empty{padding:12px;color:var(--ink-soft);font-size:13px}
+.hd-controls{
+  max-width:1120px;margin:0 auto;padding:0 24px 14px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.seg{display:flex;background:var(--peri-pale);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{
+  padding:7px 16px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--ink-soft);
+  transition:background .15s,color .15s;
+}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.lvl-wrap{display:flex;align-items:center;gap:10px}
+.lvl-wrap label{font-size:13px;font-weight:600;color:var(--ink-soft)}
+select#level{
+  font:inherit;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--peri);
+  border-radius:10px;padding:7px 10px;cursor:pointer;
+}
+.lvl-note{font-size:12.5px;color:var(--ink-soft);max-width:380px}
+
+/* ---------- layout ---------- */
+main{max-width:1120px;margin:0 auto;padding:28px 24px 72px;position:relative;z-index:1}
+.view-title{font-family:var(--font-display);font-weight:600;font-size:21px;margin-bottom:4px}
+.view-sub{color:var(--ink-soft);margin-bottom:22px;max-width:640px}
+
+/* ---------- dashboard ---------- */
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px 12px;text-align:left;cursor:pointer;transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--blue);transform:translateY(-1px)}
+.tile[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 2px var(--peri),var(--shadow)}
+.tile .num{font-family:var(--font-display);font-weight:700;font-size:27px;line-height:1.1;color:var(--ink)}
+.tile .lbl{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-top:3px}
+.tile.critical .num{color:var(--pink)}
+.tile.attention .num{color:var(--orange)}
+.tile.clear .num{color:var(--green)}
+.dash-wide{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:15px 20px 16px;margin-bottom:22px;
+}
+.dash-wide h3{font-family:var(--font-display);font-weight:600;font-size:14px}
+.statusbar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:10px 0 10px;background:var(--peri-pale)}
+.statusbar i{display:block;height:100%}
+.statusbar i+i{border-left:2px solid #fff}
+.sb-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);align-items:center}
+.sb-legend span{display:inline-flex;align-items:center;gap:7px;font-weight:600}
+.sb-legend button{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:12.5px;color:var(--ink-soft);border:1px solid transparent;border-radius:8px;padding:4px 9px}
+.sb-legend button:hover{background:var(--peri-ghost)}
+.sb-legend button[aria-pressed="true"]{border-color:var(--blue);background:var(--peri-pale);color:var(--ink)}
+.sb-legend .sw{width:10px;height:10px;border-radius:3px}
+.sb-legend .checks{margin-left:auto;font-weight:500}
+@media(max-width:620px){.sb-legend .checks{margin-left:0;width:100%}}
+
+/* ---------- queue ---------- */
+.queue{display:flex;flex-direction:column;gap:10px}
+.case-row{
+  display:grid;grid-template-columns:24px 135px 1.2fr 105px 210px minmax(110px,1fr) 110px;gap:13px;align-items:center;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 20px;box-shadow:var(--shadow);text-align:left;width:100%;
+  transition:border-color .15s, transform .15s;
+}
+.case-row:hover{border-color:var(--blue);transform:translateY(-1px)}
+.case-row .who strong{display:block;font-weight:600;font-size:15.5px}
+.case-row .who span{font-size:13px;color:var(--ink-soft)}
+.case-row .pkg{font-size:13px;color:var(--ink-soft)}
+.case-row .due{font-size:13px;color:var(--ink-soft)}
+.case-row .due strong{display:block;color:var(--ink);font-weight:600;font-size:13.5px}
+.open-link{color:var(--blue);font-weight:600;font-size:13.5px;justify-self:end}
+.signal-reason{
+  grid-column:1/-1;margin-top:2px;padding-top:12px;border-top:1px dashed var(--line);
+  font-size:13.5px;color:var(--ink-soft);
+}
+.signal-reason b{color:var(--ink);font-weight:600}
+@media(max-width:860px){
+  .case-row{grid-template-columns:1fr 1fr}
+  .open-link{justify-self:start}
+}
+
+/* badges */
+.badge{
+  display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:12px;
+  border-radius:999px;padding:5px 12px;white-space:nowrap;font-family:var(--font-display);
+}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.badge.critical{background:var(--pink-soft);color:var(--pink)}
+.badge.attention{background:var(--orange-soft);color:var(--orange)}
+.badge.routine{background:var(--peri-pale);color:var(--blue-dark)}
+.badge.clear{background:var(--green-soft);color:var(--green)}
+.badge.pending{background:#f0f1f6;color:var(--ink-soft)}
+.badge.critical .dot{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* progress */
+.prog{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft)}
+.prog .bar{flex:1;height:6px;border-radius:4px;background:var(--peri-pale);overflow:hidden;min-width:48px}
+.prog .bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+
+/* ---------- report ---------- */
+.backlink{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-weight:600;font-size:13.5px;margin-bottom:18px}
+.report-head{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;margin-bottom:22px;
+}
+.rh-main{padding:22px 24px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.rh-main h2{font-family:var(--font-display);font-weight:600;font-size:22px;line-height:1.2}
+.rh-main .meta{font-size:13px;color:var(--ink-soft);margin-top:3px}
+.rh-badges{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.rh-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  border-top:1px solid var(--line);background:var(--peri-ghost);
+}
+.rh-grid>div{padding:13px 24px;border-right:1px solid var(--line)}
+.rh-grid>div:last-child{border-right:0}
+.rh-grid .k{font-size:11.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.02em}
+.rh-grid .v{font-weight:600;font-size:14px;margin-top:2px}
+.signal-banner{
+  display:flex;gap:12px;align-items:flex-start;padding:15px 24px;font-size:14px;
+  border-top:1px solid var(--line);
+}
+.signal-banner.critical{background:var(--pink-soft);color:#8e1744}
+.signal-banner.attention{background:var(--orange-soft);color:#7c4007}
+.signal-banner.routine{background:var(--peri-pale);color:var(--blue-dark)}
+.signal-banner.clear{background:var(--green-soft);color:#0c5e3e}
+.signal-banner svg{flex:none;margin-top:2px}
+.signal-banner b{font-weight:700}
+
+/* sections */
+.section{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;
+}
+.sec-head{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line)}
+.sec-head h3{font-family:var(--font-display);font-weight:600;font-size:16px;flex:1}
+.sec-head .lvl-pill{
+  font-size:11px;font-weight:700;color:var(--blue-dark);background:var(--peri-pale);
+  border-radius:6px;padding:2px 8px;font-family:var(--font-display);
+}
+.sec-body{padding:6px 22px 18px}
+.sec-locked{
+  display:flex;align-items:center;gap:14px;padding:18px 22px;color:var(--ink-soft);font-size:14px;
+  background:repeating-linear-gradient(135deg,#fff,#fff 10px,var(--peri-ghost) 10px,var(--peri-ghost) 20px);
+}
+.sec-locked b{color:var(--ink)}
+
+/* findings */
+.finding{padding:14px 0;border-bottom:1px solid var(--peri-pale)}
+.finding:last-child{border-bottom:0}
+.f-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.f-top h4{font-size:14.5px;font-weight:600;flex:1;min-width:200px}
+.f-note{font-size:13.5px;color:var(--ink-soft);margin-top:5px;max-width:640px}
+.compare{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;max-width:680px;
+}
+.compare>div{border-radius:10px;padding:10px 14px;font-size:13.5px;border:1px solid var(--line)}
+.compare .claimed{background:var(--peri-ghost)}
+.compare .verified-ok{background:var(--green-soft);border-color:#bfe4d2}
+.compare .verified-bad{background:var(--pink-soft);border-color:#f3bfd2}
+.compare .verified-warn{background:var(--orange-soft);border-color:#eccfae}
+.compare .k{font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.03em;margin-bottom:3px}
+.compare mark{background:#ffd3e2;color:#8e1744;border-radius:3px;padding:0 3px;font-weight:600}
+.compare mark.warn{background:#fadfbe;color:#7c4007}
+@media(max-width:620px){.compare{grid-template-columns:1fr}}
+
+/* citations */
+.cite{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:19px;height:19px;padding:0 5px;margin:0 2px;vertical-align:2px;
+  border-radius:6px;background:var(--peri-pale);border:1px solid var(--peri);
+  color:var(--blue-dark);font-size:11px;font-weight:700;
+  transition:background .12s,color .12s;
+}
+.cite:hover,.cite.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.cite.sla{width:auto;font-size:10.5px}
+.adj-sub{font-size:11.5px;color:var(--ink-soft);margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ghost-btn{font-size:13px;font-weight:600;color:var(--blue-dark);background:#fff;border:1.5px solid var(--peri);border-radius:10px;padding:7px 14px}
+.ghost-btn:hover{background:var(--peri-ghost)}
+.ghost-btn.sm{padding:5px 11px;font-size:12px;border-radius:8px}
+.ghost-btn[disabled]{opacity:.6;cursor:default}
+.ctx-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.ctx-hint{font-size:11.5px;color:var(--ink-soft)}
+.due .eta{display:block;font-style:normal;color:var(--blue-dark);font-weight:600;font-size:12px;margin-top:2px}
+.ctx-banner{margin:14px 28px 4px;background:var(--peri-pale);border:1px solid var(--peri);border-radius:12px;padding:13px 16px;font-size:13px}
+
+/* ---------- assessment / adjudication ---------- */
+.adj-cell{font-size:12.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.adj-cell .k{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:#9aa1c4;letter-spacing:.03em;margin-bottom:2px}
+.adj-cell.todo{color:var(--orange)}
+.decide{display:flex;align-items:center;gap:10px;padding:13px 24px;border-top:1px solid var(--line);flex-wrap:wrap}
+.decide .k{font-size:11.5px;font-weight:700;color:var(--ink-soft)}
+.btn-solid{background:var(--green);color:#fff;font-weight:700;font-size:13px;border-radius:10px;padding:8px 16px}
+.btn-solid:hover{background:#0f6b45}
+.btn-danger{background:#fff;color:var(--pink);border:1.5px solid var(--pink);font-weight:700;font-size:13px;border-radius:10px;padding:8px 16px}
+.btn-danger:hover{background:var(--pink-soft)}
+.btn-danger[disabled]{opacity:.45;cursor:not-allowed}
+.rule-intro{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px}
+.rule{display:flex;gap:12px;align-items:flex-start;padding:12px 2px;border-bottom:1px solid var(--peri-pale)}
+.rule:last-child{border-bottom:0}
+.rule .rid{flex:none;font-family:var(--font-display);font-weight:700;font-size:11px;color:var(--blue-dark);background:var(--peri-pale);border-radius:6px;padding:3px 8px;margin-top:1px;white-space:nowrap}
+.rule .rtxt{flex:1;font-size:13px;color:var(--ink-soft);line-height:1.5}
+.rule .rtxt b{display:block;color:var(--ink);font-weight:600;font-size:12px;margin-bottom:1px}
+.rule.current{background:#fff9e3;box-shadow:0 0 0 2px #ecd96e;border-radius:10px;padding:12px 10px;border-bottom:0}
+
+/* ---------- source drawer ---------- */
+.drawer-scrim{position:fixed;inset:0;background:rgba(29,32,99,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(440px,94vw);z-index:50;background:#fff;
+  box-shadow:-12px 0 40px -18px rgba(29,32,99,.35);transform:translateX(102%);
+  transition:transform .25s ease;display:flex;flex-direction:column;
+}
+body.drawer-open .drawer{transform:none}
+body.drawer-open .drawer-scrim{opacity:1;pointer-events:auto}
+.dw-head{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
+.dw-head .num{
+  flex:none;width:30px;height:30px;border-radius:9px;background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+  font-family:var(--font-display);
+}
+.dw-head h4{font-family:var(--font-display);font-weight:600;font-size:15px;line-height:1.3}
+.dw-head .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.dw-close{margin-left:auto;flex:none;width:30px;height:30px;border-radius:8px;background:var(--peri-ghost);font-size:15px;color:var(--ink-soft)}
+.dw-close:hover{background:var(--peri-pale)}
+.dw-body{flex:1;overflow-y:auto;padding:20px 22px}
+.dw-doc{
+  background:var(--peri-ghost);border:1px solid var(--line);border-radius:12px;padding:18px 18px;
+  font-size:13.5px;line-height:1.65;color:var(--ink-soft);
+}
+.dw-doc p{margin-bottom:12px}
+.dw-doc p:last-child{margin-bottom:0}
+.dw-doc mark{
+  background:#fff3a8;color:var(--ink);padding:1px 4px;border-radius:4px;font-weight:600;
+  box-shadow:0 0 0 1.5px #ecd96e;
+}
+.dw-label{font-size:11.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.04em;margin:20px 0 8px}
+.dw-list{display:flex;flex-direction:column;gap:6px}
+.dw-list button{
+  display:flex;gap:10px;align-items:center;text-align:left;padding:9px 12px;border-radius:10px;
+  border:1px solid var(--line);font-size:13px;background:#fff;
+}
+.dw-list button:hover{border-color:var(--blue);background:var(--peri-ghost)}
+.dw-list .n{flex:none;width:21px;height:21px;border-radius:6px;background:var(--peri-pale);color:var(--blue-dark);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.dw-list button.current{border-color:var(--blue);background:var(--peri-pale)}
+
+/* ---------- queue search + export bar ---------- */
+.qbar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.qbar .search-wrap{flex:1;min-width:220px;margin-bottom:0}
+.date-search{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:6px 10px;box-shadow:var(--shadow)}
+.date-search label{font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+.date-search select,.date-search input{font:inherit;font-weight:600;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid var(--peri);border-radius:8px;padding:6px 8px}
+.sel{display:flex;align-items:center;justify-content:center}
+.sel input{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+.exp-group{display:flex;align-items:center;gap:8px}
+.exp-group .k{font-size:11.5px;font-weight:700;color:var(--ink-soft)}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap input{width:100%;font:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 16px 11px 42px;box-shadow:var(--shadow)}
+.search-wrap input:focus{border-color:var(--blue);outline:none}
+.search-wrap input::placeholder{color:#9aa1c4}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-soft)}
+.queue-empty{background:var(--card);border:1px dashed var(--peri);border-radius:var(--radius);padding:28px;text-align:center;color:var(--ink-soft);font-size:14px}
+.intake{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px 8px;margin:0 0 16px}
+.intake-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+.intake-head > div:first-child{flex:1;min-width:0}
+.intake-head h3{font-family:var(--font-display);font-weight:600;font-size:15px}
+.intake-head p{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.intake-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.intake-ctrls{display:flex;gap:6px}
+.intake-head b{font-size:13px;color:var(--blue-dark);white-space:nowrap}
+.intake.paused b{color:var(--ink-soft)}
+.intake-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dashed var(--line)}
+.intake-row .who{display:flex;flex-direction:column;flex:1;min-width:0}
+.intake-row .who strong{font-size:14px}
+.intake-row .who span{font-size:12.5px;color:var(--ink-soft)}
+.intake-row em{font-style:normal;font-size:11px;font-weight:700;color:var(--blue-dark)}
+.intake-empty{font-size:13px;color:var(--ink-soft);padding:4px 0 10px}
+.case-row.fresh{border-color:var(--blue);box-shadow:0 0 0 2px var(--peri),var(--shadow)}
+
+/* ---------- ask this report ---------- */
+.chat-note{font-size:11.5px;color:var(--ink-soft);font-weight:500;max-width:320px;text-align:right}
+.chat-log{display:flex;flex-direction:column;gap:10px;padding:14px 0 4px}
+.msg{max-width:85%;border-radius:12px;padding:10px 14px;font-size:13.5px;line-height:1.55}
+.msg.ai{background:var(--peri-ghost);border:1px solid var(--peri-pale);align-self:flex-start}
+.msg.me{background:var(--ink);color:#fff;align-self:flex-end}
+.chips-row{display:flex;gap:8px;flex-wrap:wrap;padding:8px 0 4px}
+.chips-row button{font-size:12.5px;font-weight:600;color:var(--blue-dark);background:var(--peri-pale);border:1px solid var(--peri);border-radius:999px;padding:6px 13px;text-align:left}
+.chips-row button:hover{background:var(--peri);color:var(--ink)}
+.chat-input{display:flex;gap:8px;padding:8px 0 2px}
+.chat-input input{flex:1;font:inherit;font-size:13.5px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 13px}
+.chat-input input:focus{border-color:var(--blue);outline:none}
+.chat-input button{background:var(--blue);color:#fff;font-weight:600;font-size:13.5px;border-radius:10px;padding:9px 18px}
+.chat-input button:hover{background:var(--blue-dark)}
+
+/* ---------- candidate view ---------- */
+.cand-card{
+  max-width:620px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+}
+.cand-hero{padding:26px 28px 20px;background:linear-gradient(135deg,var(--ink) 0%,#2a2f8f 70%,var(--blue-dark) 100%);color:#fff}
+.cand-hero h2{font-family:var(--font-display);font-weight:600;font-size:20px}
+.cand-hero p{opacity:.85;font-size:13.5px;margin-top:4px}
+.cand-prog{margin-top:18px}
+.cand-prog .bar{height:8px;border-radius:5px;background:rgba(255,255,255,.22);overflow:hidden}
+.cand-prog .bar i{display:block;height:100%;background:#fff;border-radius:5px}
+.cand-prog span{font-size:12.5px;opacity:.85;display:block;margin-top:7px}
+.cand-rows{padding:8px 28px 10px}
+.cand-row{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid var(--peri-pale)}
+.cand-row:last-child{border-bottom:0}
+.cand-row .nm{flex:1;font-weight:600;font-size:14.5px}
+.cand-row .sub{display:block;font-weight:400;font-size:12.5px;color:var(--ink-soft)}
+.cand-foot{padding:16px 28px 22px;background:var(--peri-ghost);border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-soft)}
+.cand-foot b{color:var(--ink)}
+.cand-picker{max-width:620px;margin:0 auto 16px;display:flex;gap:8px;flex-wrap:wrap}
+.cand-picker button{
+  font-size:12.5px;font-weight:600;color:var(--ink-soft);background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:6px 14px;
+}
+.cand-picker button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+footer{max-width:1120px;margin:0 auto;padding:0 24px 40px;font-size:12px;color:var(--ink-soft);position:relative;z-index:1}
+
+/* ---------- export / print ---------- */
+.report-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px}
+.report-top .backlink{margin-bottom:0}
+.print-only,.print-foot{display:none}
+@media print{
+  @page{margin:12mm 12mm 14mm}
+  *,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  header,.burst,.report-top,#askCard,.drawer,.drawer-scrim,.search-wrap,.date-search,footer,
+  .decide,.ctx-row .ghost-btn,.cand-picker,.watch-wrap,.intake{display:none!important}
+  html,body{background:#fff!important}
+  main{padding:0;max-width:none}
+  .print-only{
+    display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+    padding-bottom:10px;margin-bottom:14px;border-bottom:3px solid var(--ink);
+  }
+  .print-only .wordmark{font-size:22px}
+  .print-only .print-meta{font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.02em}
+  .report-head,.section{
+    box-shadow:none;background:#fff!important;border:1px solid var(--line);overflow:visible;
+  }
+  .report-head{break-inside:avoid}
+  .rh-main h2{font-size:20px}
+  .rh-grid{background:var(--peri-ghost)!important;grid-template-columns:repeat(3,1fr)!important}
+  .signal-banner.critical{background:var(--pink-soft)!important;color:#8e1744!important}
+  .signal-banner.attention{background:var(--orange-soft)!important;color:#7c4007!important}
+  .signal-banner.routine{background:var(--peri-pale)!important;color:var(--blue-dark)!important}
+  .signal-banner.clear{background:var(--green-soft)!important;color:#0c5e3e!important}
+  .badge.critical{background:var(--pink-soft)!important;color:var(--pink)!important}
+  .badge.attention{background:var(--orange-soft)!important;color:var(--orange)!important}
+  .badge.routine{background:var(--peri-pale)!important;color:var(--blue-dark)!important}
+  .badge.clear{background:var(--green-soft)!important;color:var(--green)!important}
+  .badge.pending{background:#f0f1f6!important;color:var(--ink-soft)!important}
+  .badge.critical .dot{animation:none}
+  .sec-head{break-after:avoid;background:#fff}
+  .sec-head .lvl-pill{background:var(--peri-pale)!important;color:var(--blue-dark)!important}
+  .finding{break-inside:avoid}
+  .compare{max-width:none}
+  .compare .claimed{background:var(--peri-ghost)!important}
+  .compare .verified-ok{background:var(--green-soft)!important;border-color:#bfe4d2!important}
+  .compare .verified-bad{background:var(--pink-soft)!important;border-color:#f3bfd2!important}
+  .compare .verified-warn{background:var(--orange-soft)!important;border-color:#eccfae!important}
+  .compare mark{background:#ffd3e2!important;color:#8e1744!important}
+  .compare mark.warn{background:#fadfbe!important;color:#7c4007!important}
+  .cite{background:var(--peri-pale)!important;border:1px solid var(--peri)!important;color:var(--blue-dark)!important}
+  .f-note{max-width:none}
+  .sec-locked{background:var(--peri-ghost)!important}
+  .cand-hero{background:var(--ink)!important;color:#fff!important}
+  .print-foot{
+    display:block;margin-top:16px;padding-top:8px;border-top:1px solid var(--line);
+    font-size:10px;color:var(--ink-soft);
+  }
+}
+</style>
+</head>
+<body>
+
+<svg class="burst tr" viewBox="0 0 100 100" aria-hidden="true">
+  <g fill="#c6cff0">
+    <path d="M50 50 L38 2 L50 14 L62 2 Z"/><path d="M50 50 L14 10 L30 14 L34 -2 Z" transform="rotate(30 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(60 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(90 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(120 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(150 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(180 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(210 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(240 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(270 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(300 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(330 50 50)"/>
+  </g>
+</svg>
+<svg class="burst bl" viewBox="0 0 100 100" aria-hidden="true">
+  <g fill="#d9def3">
+    <path d="M50 50 L38 2 L50 14 L62 2 Z"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(30 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(60 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(90 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(120 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(150 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(180 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(210 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(240 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(270 50 50)"/>
+    <path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(300 50 50)"/><path d="M50 50 L38 2 L50 14 L62 2 Z" transform="rotate(330 50 50)"/>
+  </g>
+</svg>
+
+<header>
+  <div class="hd-top">
+    <span class="wordmark">Smart <em>Report</em></span>
+    <div class="watch-wrap" id="watchWrap">
+      <button class="watch-orb" id="watchBtn" type="button" aria-expanded="false" aria-controls="watchPop" aria-describedby="watchTip" aria-live="polite" aria-label="Status bot">
+        <svg class="bot-face" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="3.5" r="2" fill="currentColor"/>
+          <path d="M16 5.5v3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <rect x="6" y="9" width="20" height="16" rx="6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="12.2" cy="16" r="1.6" fill="currentColor"/>
+          <circle cx="19.8" cy="16" r="1.6" fill="currentColor"/>
+          <path id="botMouth" d="M12.5 21.2c1.1.9 2.2 1.3 3.5 1.3s2.4-.4 3.5-1.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span class="watch-num" id="watchNum" aria-hidden="true"></span>
+        <span class="watch-tip" id="watchTip" role="tooltip">Queue is clear.</span>
+      </button>
+      <div class="watch-pop" id="watchPop" hidden role="region" aria-label="Cases that need you"></div>
+    </div>
+    <span class="proto-tag">Hackathon prototype · fictional data</span>
+  </div>
+  <div class="hd-controls">
+    <div class="seg" role="group" aria-label="View as">
+      <button id="roleRecruiter" aria-pressed="true">Recruiter view</button>
+      <button id="roleCandidate" aria-pressed="false">Candidate view</button>
+    </div>
+    <div class="lvl-wrap" id="lvlWrap">
+      <label for="level">Access level</label>
+      <select id="level">
+        <option value="1">Level 1</option>
+        <option value="2">Level 2</option>
+        <option value="3" selected>Level 3</option>
+        <option value="4">Level 4</option>
+        <option value="5">Level 5</option>
+      </select>
+      <span class="lvl-note" id="lvlNote"></span>
+    </div>
+    <button class="ghost-btn" id="slaBtn">SLA criteria</button>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer>Smart Report · prototype built for the hackathon. All candidates, employers, records and documents on this page are fictional.</footer>
+
+<div class="drawer-scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dwTitle"></aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* =========================================================
+   Data — all fictional
+========================================================= */
+const LEVEL_NOTES = {
+  1:"Level 1 · Summary only: overall result and per-check status, per SLA tier.",
+  2:"Level 2 · Adds identity, employment and education detail with sources.",
+  3:"Level 3 · Adds criminal record searches.",
+  4:"Level 4 · Adds credit history for finance-sensitive roles.",
+  5:"Level 5 · Full report: adds drug screening and complete source access."
+};
+const SECTION_LEVELS = { identity:2, employment:2, education:2, criminal:3, credit:4, drug:5 };
+
+/* SLA adjudication matrix — read-only for recruiters (Level 3+) */
+const SLA_RULES=[
+  {id:"1.1",area:"Identity",rule:"SSN trace matches the applicant and address history is consistent.",auto:true},
+  {id:"2.1",area:"Employment",rule:"Title and date variance of 3 months or less against employer records.",auto:true},
+  {id:"2.2",area:"Employment",rule:"Date variance over 3 months, or title mismatch confirmed by the employer of record.",auto:false},
+  {id:"3.1",area:"Education",rule:"Degree verified with conferral within 6 months of the stated date.",auto:true},
+  {id:"3.2",area:"Education",rule:"Conferral variance over 6 months, or institution mismatch.",auto:false},
+  {id:"4.1",area:"Criminal",rule:"No records found at national and county level.",auto:true},
+  {id:"4.2",area:"Criminal",rule:"Record found that the candidate did not disclose. Individualized assessment required before any adverse action.",auto:false},
+  {id:"5.1",area:"Credit",rule:"Open collections above $5,000 on finance-sensitive roles.",auto:false},
+  {id:"6.1",area:"General",rule:"All checks complete with every section auto-cleared: case is adjudicated by Smart Report as meeting standards.",auto:true}
+];
+const CASE_ADJ={
+  "AB-2026-1187":{mode:"manual",rules:["2.2","4.2","5.1"]},
+  "AB-2026-1203":{mode:"manual",rules:["3.2"]},
+  "AB-2026-1219":{mode:"auto",rules:["6.1"]},
+  "AB-2026-1224":{mode:"pending",rules:[]},
+  "AB-2026-1230":{mode:"pending",rules:[]}
+};
+
+const CASES = [
+{
+  id:"AB-2026-1187", order:"ORD-55821", name:"Jordan Avery", role:"Senior Financial Analyst", location:"Chicago, IL", geo:"CHI",
+  pkg:"Finance package · 6 checks", ordered:"Nov 10, 2026", due:"Nov 17, 2026", dueIn:"2 days",
+  signal:"critical", status:"review", progress:[6,6], completed:"Nov 14, 2026",
+  signalReason:"Undisclosed county criminal record, plus a 14-month gap between the stated and verified start date at the most recent employer.",
+  adjudication:"Review required",
+  sections:[
+    { key:"identity", title:"Identity verification", status:"verified", findings:[
+      { kind:"match", title:"SSN trace and address history",
+        note:"Social Security trace matches the applicant. Three prior addresses found, all consistent with the application.", cites:[1] }
+    ]},
+    { key:"employment", title:"Employment history", status:"discrepancy", findings:[
+      { kind:"discrepancy", severity:"critical", title:"Meridian Capital Group: title and dates",
+        claimed:"Senior Analyst · Mar 2021 – Aug 2026",
+        verified:"Analyst II · <mark>Jun 2022</mark> – Aug 2026",
+        note:"Employer HR confirms a different title and a start date 14 months later than stated. The gap period is unaccounted for.",
+        cites:[1,2] },
+      { kind:"match", title:"Northgate Insurance · Junior Analyst",
+        claimed:"Jun 2018 – Feb 2021", verified:"Jun 2018 – Feb 2021",
+        note:"Dates and title confirmed by the employer of record.", cites:[3] }
+    ]},
+    { key:"education", title:"Education", status:"verified", findings:[
+      { kind:"match", title:"B.S. Finance · University of Illinois",
+        claimed:"Conferred May 2018", verified:"Conferred May 2018",
+        note:"Degree confirmed through the National Student Clearinghouse.", cites:[4] }
+    ]},
+    { key:"criminal", title:"Criminal record search", status:"record", findings:[
+      { kind:"discrepancy", severity:"critical", ctx:true, title:"Cook County, IL: record found, not disclosed",
+        claimed:"Application disclosure: “No”",
+        verified:"<mark>Misdemeanor theft under $500 (2023)</mark> · plea, supervision completed",
+        note:"County search returned a 2023 misdemeanor. The candidate answered “No” to the disclosure question. Flagged for individualized assessment per your adjudication matrix.",
+        cites:[5,1] }
+    ]},
+    { key:"credit", title:"Credit history", status:"attention", findings:[
+      { kind:"discrepancy", severity:"attention", title:"Open collections account",
+        claimed:"Not applicable", verified:"<mark class='warn'>$8,200 in collections</mark> · opened Jan 2025",
+        note:"One open collections account. Relevant under the finance-role matrix; not independently disqualifying.", cites:[6] }
+    ]},
+    { key:"drug", title:"Drug screening", status:"verified", findings:[
+      { kind:"match", title:"10-panel urinalysis", claimed:"Not applicable", verified:"Negative",
+        note:"Collected Nov 12 at LabPoint Chicago. Negative on all panels.", cites:[7] }
+    ]}
+  ],
+  sources:[
+    { id:1, title:"Candidate application & disclosures", type:"Candidate-provided · PDF", date:"Nov 10, 2026",
+      body:[
+        "Section 3: Employment history. Most recent employer: Meridian Capital Group, Chicago IL. Position held: Senior Analyst. Employment dates: March 2021 to August 2026. Reason for leaving: pursuing growth opportunity.",
+        "Prior employer: Northgate Insurance, Position: Junior Analyst, June 2018 to February 2021.",
+        "Section 7: Disclosures. “Have you ever been convicted of, or pleaded guilty or no contest to, a criminal offense?” Answer: No.",
+        "Signed electronically by the candidate on Nov 10, 2026 under FCRA consent." ],
+      mark:"Position held: Senior Analyst. Employment dates: March 2021 to August 2026" },
+    { id:2, title:"Employer verification · Meridian Capital Group", type:"HR verification call log", date:"Nov 13, 2026",
+      body:[
+        "Verified with: Meridian Capital Group, Human Resources (ref. T. Walsh, HR Operations).",
+        "Employment confirmed: Yes. Title at hire and at separation: Analyst II. Start date: June 2022. End date: August 2026. Eligible for rehire: yes.",
+        "HR noted no record of the title “Senior Analyst” for this employee. Verification completed by phone and confirmed in writing." ],
+      mark:"Title at hire and at separation: Analyst II. Start date: June 2022" },
+    { id:3, title:"Employer verification · Northgate Insurance", type:"HR verification · written", date:"Nov 12, 2026",
+      body:[
+        "Northgate Insurance HR confirms employment from June 2018 to February 2021, title Junior Analyst. Dates and title match the candidate statement exactly." ],
+      mark:"June 2018 to February 2021, title Junior Analyst" },
+    { id:4, title:"National Student Clearinghouse result", type:"Education verification", date:"Nov 11, 2026",
+      body:[
+        "Institution: University of Illinois Urbana-Champaign. Degree: Bachelor of Science, Finance. Conferred: May 2018. Record status: verified match." ],
+      mark:"Conferred: May 2018" },
+    { id:5, title:"Cook County Circuit Court record", type:"County criminal search", date:"Nov 14, 2026",
+      body:[
+        "Case 2023-M-48812, Circuit Court of Cook County, Illinois.",
+        "Charge: Theft of property not exceeding $500, Class A misdemeanor. Disposition: plea of guilty, 12 months court supervision, completed March 2024. No subsequent entries.",
+        "Identifiers matched on full name and date of birth; verified against SSN trace address history." ],
+      mark:"Theft of property not exceeding $500, Class A misdemeanor" },
+    { id:6, title:"Credit report extract", type:"Consumer credit bureau", date:"Nov 13, 2026",
+      body:[
+        "Tradelines in good standing: 7. Delinquent tradelines: 1.",
+        "Collections: account placed January 2025, original creditor retail card issuer, balance $8,200, status open.",
+        "Report furnished for employment purposes under FCRA 604(b)." ],
+      mark:"balance $8,200, status open" },
+    { id:7, title:"Lab result · LabPoint Chicago", type:"Drug screening", date:"Nov 13, 2026",
+      body:[
+        "Specimen collected Nov 12, 2026, chain of custody intact. 10-panel urinalysis: negative on all panels. MRO review: complete." ],
+      mark:"negative on all panels" }
+  ]
+},
+{
+  id:"AB-2026-1203", order:"ORD-55834", name:"Priya Nair", role:"Registered Nurse", location:"Phoenix, AZ", geo:"PHX",
+  pkg:"Healthcare package · 5 checks", ordered:"Nov 11, 2026", due:"Nov 18, 2026", dueIn:"3 days",
+  signal:"attention", status:"review", progress:[5,5], completed:"Nov 14, 2026",
+  signalReason:"Degree conferral date differs by one year from the application; everything else verified clean.",
+  adjudication:"Minor review",
+  sections:[
+    { key:"identity", title:"Identity verification", status:"verified", findings:[
+      { kind:"match", title:"SSN trace and address history", note:"Trace matches the applicant; two prior addresses, consistent.", cites:[1] } ]},
+    { key:"employment", title:"Employment history", status:"verified", findings:[
+      { kind:"match", title:"Banner Desert Medical · Staff Nurse",
+        claimed:"Aug 2020 – present", verified:"Aug 2020 – present",
+        note:"Confirmed by employer HR, in good standing.", cites:[2] } ]},
+    { key:"education", title:"Education & licensure", status:"discrepancy", findings:[
+      { kind:"discrepancy", severity:"attention", title:"BSN · Arizona State University, conferral date",
+        claimed:"Conferred May 2019", verified:"Conferred <mark class='warn'>May 2020</mark>",
+        note:"Registrar shows conferral one year later than stated. Commonly a memory error; license history is consistent with the verified date.", cites:[3,1] },
+      { kind:"match", title:"RN license · Arizona Board of Nursing",
+        claimed:"License #RN21488, active", verified:"Active, no disciplinary actions",
+        note:"License verified directly with the state board.", cites:[4] } ]},
+    { key:"criminal", title:"Criminal record search", status:"verified", findings:[
+      { kind:"match", title:"National + Maricopa County search", claimed:"Not applicable", verified:"No records found",
+        note:"No matching records at national or county level.", cites:[] } ]}
+  ],
+  sources:[
+    { id:1, title:"Candidate application & disclosures", type:"Candidate-provided · PDF", date:"Nov 11, 2026",
+      body:[
+        "Section 4: Education. Bachelor of Science in Nursing, Arizona State University, conferred May 2019.",
+        "Section 3: Employment. Banner Desert Medical Center, Staff Nurse, August 2020 to present." ],
+      mark:"conferred May 2019" },
+    { id:2, title:"Employer verification · Banner Desert Medical", type:"HR verification call log", date:"Nov 13, 2026",
+      body:[ "Employment confirmed: Staff Nurse, August 2020 to present. Standing: good. Eligible for rehire: yes." ],
+      mark:"Staff Nurse, August 2020 to present" },
+    { id:3, title:"Registrar verification · Arizona State University", type:"Education verification", date:"Nov 14, 2026",
+      body:[ "Degree: Bachelor of Science in Nursing. Conferral date on record: May 2020. No other conferrals found for this student record." ],
+      mark:"Conferral date on record: May 2020" },
+    { id:4, title:"Arizona Board of Nursing · license lookup", type:"License verification", date:"Nov 12, 2026",
+      body:[ "License RN21488: status active, issued June 2020, renewed on schedule, no disciplinary actions on file." ],
+      mark:"status active" }
+  ]
+},
+{
+  id:"AB-2026-1219", order:"ORD-55861", name:"Daniel Okafor", role:"Software Engineer", location:"Austin, TX", geo:"AUS",
+  pkg:"Standard package · 4 checks", ordered:"Nov 12, 2026", due:"Nov 19, 2026", dueIn:"4 days",
+  signal:"routine", status:"clear", progress:[4,4], completed:"Nov 13, 2026",
+  signalReason:"All checks complete. No discrepancies found.",
+  adjudication:"Meets standards",
+  sections:[
+    { key:"identity", title:"Identity verification", status:"verified", findings:[
+      { kind:"match", title:"SSN trace and address history", note:"Trace matches; address history consistent.", cites:[] } ]},
+    { key:"employment", title:"Employment history", status:"verified", findings:[
+      { kind:"match", title:"Trellis Software · Engineer II", claimed:"Jan 2022 – present", verified:"Jan 2022 – present", note:"Confirmed by employer of record.", cites:[] } ]},
+    { key:"education", title:"Education", status:"verified", findings:[
+      { kind:"match", title:"B.S. Computer Science · UT Austin", claimed:"Conferred Dec 2021", verified:"Conferred Dec 2021", note:"Verified via clearinghouse.", cites:[] } ]},
+    { key:"criminal", title:"Criminal record search", status:"verified", findings:[
+      { kind:"match", title:"National + Travis County search", claimed:"Not applicable", verified:"No records found", note:"No matching records found.", cites:[] } ]}
+  ],
+  sources:[]
+},
+{
+  id:"AB-2026-1224", order:"ORD-55872", name:"Sofia Mendes", role:"Customer Support Lead", location:"Orlando, FL", geo:"ORL",
+  pkg:"Standard package · 5 checks", ordered:"Nov 13, 2026", due:"Nov 20, 2026", dueIn:"5 days", eta:"Nov 17, 2:00 PM",
+  signal:"routine", status:"progress", progress:[3,5],
+  signalReason:"In progress: county criminal search and one employer verification still pending. Nothing flagged so far.",
+  adjudication:"Pending",
+  sections:[
+    { key:"identity", title:"Identity verification", status:"verified", findings:[
+      { kind:"match", title:"SSN trace and address history", note:"Trace matches the applicant.", cites:[] } ]},
+    { key:"employment", title:"Employment history", status:"pending", findings:[
+      { kind:"match", title:"Brightline Travel · verified", claimed:"2019 – 2023", verified:"2019 – 2023", note:"First employer confirmed; second verification in progress.", cites:[] } ]},
+    { key:"education", title:"Education", status:"verified", findings:[
+      { kind:"match", title:"A.A. · Valencia College", claimed:"Conferred 2018", verified:"Conferred 2018", note:"Verified.", cites:[] } ]},
+    { key:"criminal", title:"Criminal record search", status:"pending", findings:[
+      { kind:"note", title:"Orange County search in progress", note:"County search submitted Nov 14; typical turnaround 3–5 business days.", cites:[] } ]}
+  ],
+  sources:[]
+},
+{
+  id:"AB-2026-1230", order:"ORD-55890", name:"Hannah Liu", role:"Marketing Coordinator", location:"Seattle, WA", geo:"SEA",
+  pkg:"Standard package · 4 checks", ordered:"Nov 14, 2026", due:"Nov 21, 2026", dueIn:"6 days", eta:"Nov 19, 11:00 AM",
+  signal:"routine", status:"progress", progress:[1,4],
+  signalReason:"Just ordered: identity verified, remaining checks queued.",
+  adjudication:"Pending",
+  sections:[
+    { key:"identity", title:"Identity verification", status:"verified", findings:[
+      { kind:"match", title:"SSN trace and address history", note:"Trace matches the applicant.", cites:[] } ]},
+    { key:"employment", title:"Employment history", status:"pending", findings:[
+      { kind:"note", title:"Verifications queued", note:"Two employer verifications queued.", cites:[] } ]},
+    { key:"education", title:"Education", status:"pending", findings:[
+      { kind:"note", title:"Clearinghouse request submitted", note:"Awaiting response.", cites:[] } ]},
+    { key:"criminal", title:"Criminal record search", status:"pending", findings:[
+      { kind:"note", title:"Search queued", note:"Submitted to national and county sources.", cites:[] } ]}
+  ],
+  sources:[]
+}
+];
+
+/* =========================================================
+   State + helpers
+========================================================= */
+const state = { role:"recruiter", level:3, view:"queue", caseId:null, candId:CASES[0].id, src:null, q:"", dateField:"any", date:"", ctxReq:{}, ctxSent:{}, decisions:{}, filter:null, selected:{}, watchOpen:false };
+const FILTERS={
+  critical:c=>c.signal==="critical",
+  attention:c=>c.signal==="attention",
+  disc:c=>c.sections.some(s=>s.findings.some(f=>f.kind==="discrepancy")),
+  review:c=>c.status==="review",
+  progress:c=>c.status==="progress",
+  clear:c=>c.status==="clear"
+};
+const app = document.getElementById("app");
+const SIGNAL_LABEL = { critical:"Critical", attention:"Attention", routine:"Routine" };
+const SIGNAL_ORDER = { critical:0, attention:1, routine:2 };
+const STATUS_BADGE = {
+  verified:["clear","Verified"], discrepancy:["critical","Discrepancy found"],
+  record:["critical","Record found"], attention:["attention","Needs attention"],
+  pending:["pending","In progress"]
+};
+const esc = s => s==null ? "" : String(s);
+const escq = s => String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const icons = {
+  alert:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3 2.5 20h19L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.2" fill="currentColor"/></svg>',
+  check:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="m8.5 12.2 2.4 2.4 4.6-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  lock:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="currentColor" stroke-width="2"/></svg>',
+  back:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+function badge(kind,label,extra=""){return `<span class="badge ${kind} ${extra}"><span class="dot"></span>${label}</span>`}
+function prog(c){const [d,t]=c.progress;return `<div class="prog"><div class="bar"><i style="width:${Math.round(d/t*100)}%"></i></div><span>${d}/${t}</span></div>`}
+function citeChips(c,cites){
+  if(!cites||!cites.length) return "";
+  return cites.map(n=>`<button class="cite" data-case="${c.id}" data-src="${n}" aria-label="Open source ${n}">${n}</button>`).join("");
+}
+
+/* =========================================================
+   Views
+========================================================= */
+function renderQueue(){
+  const cases=[...CASES].sort((a,b)=>SIGNAL_ORDER[a.signal]-SIGNAL_ORDER[b.signal]);
+  const sig=s=>CASES.filter(c=>c.signal===s).length;
+  const st=s=>CASES.filter(c=>c.status===s).length;
+  const disc=CASES.reduce((n,c)=>n+c.sections.reduce((m,x)=>m+x.findings.filter(f=>f.kind==="discrepancy").length,0),0);
+  const done=CASES.reduce((n,c)=>n+c.progress[0],0), tot=CASES.reduce((n,c)=>n+c.progress[1],0);
+  const nR=st("review"), nP=st("progress"), nC=st("clear"), total=CASES.length;
+  const pc=n=>(n/total*100).toFixed(1)+"%";
+  app.innerHTML = `
+    <h1 class="view-title">Screening queue</h1>
+    <p class="view-sub">One report, one alert. Cases are ranked by risk signal so the report that matters is the first one you open.</p>
+    ${intakeHTML()}
+    <div class="dash">
+      <button class="tile" data-filter="" aria-pressed="${state.filter===null}"><div class="num">${total}</div><div class="lbl">Active screenings</div></button>
+      <button class="tile critical" data-filter="critical" aria-pressed="${state.filter==="critical"}"><div class="num">${sig("critical")}</div><div class="lbl">Critical signals</div></button>
+      <button class="tile attention" data-filter="attention" aria-pressed="${state.filter==="attention"}"><div class="num">${sig("attention")}</div><div class="lbl">Attention signals</div></button>
+      <button class="tile" data-filter="disc" aria-pressed="${state.filter==="disc"}"><div class="num">${disc}</div><div class="lbl">Discrepancies flagged</div></button>
+      <button class="tile clear" data-filter="clear" aria-pressed="${state.filter==="clear"}"><div class="num">${nC}</div><div class="lbl">Complete and clear</div></button>
+    </div>
+    <div class="dash-wide">
+      <h3>Screening status</h3>
+      <div class="statusbar" role="img" aria-label="${nR} need review, ${nP} in progress, ${nC} complete and clear">
+        ${nR?`<i style="width:${pc(nR)};background:var(--pink)"></i>`:""}
+        ${nP?`<i style="width:${pc(nP)};background:var(--blue)"></i>`:""}
+        ${nC?`<i style="width:${pc(nC)};background:var(--green)"></i>`:""}
+      </div>
+      <div class="sb-legend">
+        <button data-filter="review" aria-pressed="${state.filter==="review"}"><i class="sw" style="background:var(--pink)"></i>Needs review · ${nR}</button>
+        <button data-filter="progress" aria-pressed="${state.filter==="progress"}"><i class="sw" style="background:var(--blue)"></i>In progress · ${nP}</button>
+        <button data-filter="clear" aria-pressed="${state.filter==="clear"}"><i class="sw" style="background:var(--green)"></i>Complete and clear · ${nC}</button>
+        <span class="checks">${done} of ${tot} individual checks finished</span>
+      </div>
+    </div>
+    <div class="qbar">
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="qSearch" type="search" placeholder="Search by name, reference (AB-…) or order number (ORD-…)" value="${escq(state.q)}" aria-label="Search screenings">
+      </div>
+      <div class="date-search">
+        <label for="dateField">Date</label>
+        <select id="dateField" aria-label="Which date to search">
+          <option value="any" ${state.dateField==="any"?"selected":""}>Any date</option>
+          <option value="ordered" ${state.dateField==="ordered"?"selected":""}>Ordered</option>
+          <option value="due" ${state.dateField==="due"?"selected":""}>Due</option>
+          <option value="completed" ${state.dateField==="completed"?"selected":""}>Completed</option>
+        </select>
+        <input id="dateSearch" type="date" aria-label="Search by date" value="${escq(state.date)}">
+      </div>
+      <button class="ghost-btn" id="xlsBtn" disabled>Excel</button>
+      <button class="ghost-btn" id="zipBtn">Export ZIP (all)</button>
+    </div>
+    <div class="queue" id="queueList"></div>`;
+  wireIntake();
+  const listEl=document.getElementById("queueList");
+  const zb=document.getElementById("zipBtn");
+  const xb=document.getElementById("xlsBtn");
+  const selectedCases=()=>CASES.filter(c=>state.selected[c.id]);
+  const updateZipBtn=()=>{
+    const n=selectedCases().length;
+    zb.textContent=n?`Export ZIP (${n} selected)`:"Export ZIP (all)";
+    xb.disabled=!n;
+    xb.textContent=n?`Excel (${n})`:"Excel";
+  };
+  zb.addEventListener("click",()=>{
+    const sel=selectedCases();
+    zipAll(sel.length?sel:CASES,zb);
+  });
+  xb.addEventListener("click",()=>{
+    const sel=selectedCases();
+    if(!sel.length) return;
+    if(!window.XLSX) return flash(xb,"Lib not loaded");
+    dl(listXlsx(sel),"smart-report-status.xlsx");
+  });
+  updateZipBtn();
+  const ymd=raw=>{
+    if(!raw) return "";
+    const d=new Date(raw);
+    if(Number.isNaN(d.getTime())) return "";
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  };
+  const matchesDate=c=>{
+    if(!state.date) return true;
+    const fields=state.dateField==="any"?["ordered","due","completed"]:[state.dateField];
+    return fields.some(f=>ymd(c[f])===state.date);
+  };
+  const drawList=()=>{
+    const q=state.q.trim().toLowerCase();
+    let shown=cases.filter(c=>{
+      if(!matchesDate(c)) return false;
+      if(!q) return true;
+      const dates=[c.ordered,c.due,c.completed,c.eta].filter(Boolean).join(" ").toLowerCase();
+      return c.name.toLowerCase().includes(q)||c.id.toLowerCase().includes(q)||(c.order||"").toLowerCase().includes(q)||dates.includes(q);
+    });
+    if(state.filter&&FILTERS[state.filter]) shown=shown.filter(FILTERS[state.filter]);
+    listEl.innerHTML = shown.length ? shown.map(c=>`
+        <div class="case-row${c.id===state.freshId?" fresh":""}" data-open="${c.id}" role="button" tabindex="0" aria-label="Open report for ${c.name}">
+          <label class="sel" title="Select for the Excel status list"><input type="checkbox" data-sel="${c.id}" ${state.selected[c.id]?"checked":""} aria-label="Select ${c.name} for the status list"></label>
+          ${badge(c.signal,SIGNAL_LABEL[c.signal])}
+          <span class="who"><strong>${c.name}</strong><span>${c.role} · ${c.geo} · ${c.order}</span></span>
+          ${badge(...assessOf(c))}
+          <span class="adj-cell${adjOf(c)==="Not adjudicated"?" todo":""}"><i class="k">Adjudication</i>${adjOf(c)}</span>
+          ${prog(c)}
+          <span class="due"><strong>Due in ${c.dueIn}</strong>${c.due}${c.eta?`<em class="eta">ETA ${c.eta}</em>`:""}</span>
+          <span class="signal-reason"><b>Why this signal:</b> ${c.signalReason}</span>
+        </div>`).join("")
+      : `<div class="queue-empty">No screenings match your current filter or search.<br><button class="ghost-btn sm" data-clearall style="margin-top:10px">Show all</button></div>`;
+    listEl.querySelectorAll("[data-open]").forEach(row=>{
+      const open=()=>{state.view="report";state.caseId=row.dataset.open;render();window.scrollTo(0,0)};
+      row.addEventListener("click",e=>{if(e.target.closest(".sel"))return;open()});
+      row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest(".sel")){e.preventDefault();open()}});
+    });
+    listEl.querySelectorAll("[data-sel]").forEach(cb=>cb.addEventListener("change",()=>{state.selected[cb.dataset.sel]=cb.checked;updateZipBtn()}));
+    const ca=listEl.querySelector("[data-clearall]");
+    if(ca)ca.addEventListener("click",()=>{state.filter=null;state.q="";state.date="";state.dateField="any";render()});
+  };
+  drawList();
+  const si=document.getElementById("qSearch");
+  si.addEventListener("input",()=>{state.q=si.value;drawList()});
+  document.getElementById("dateField").addEventListener("change",e=>{state.dateField=e.target.value;drawList()});
+  document.getElementById("dateSearch").addEventListener("input",e=>{state.date=e.target.value;drawList()});
+  app.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{
+    const v=b.dataset.filter;
+    state.filter=(v===""||state.filter===v)?null:v;
+    render();
+  }));
+}
+
+function findingHTML(c,f){
+  const sev = f.severity==="critical"?"verified-bad":f.severity==="attention"?"verified-warn":"verified-ok";
+  const tag = f.kind==="discrepancy"
+      ? badge(f.severity==="critical"?"critical":"attention", f.severity==="critical"?"Discrepancy":"Check")
+      : f.kind==="note" ? badge("pending","Pending") : badge("clear","Match");
+  const compare = (f.claimed||f.verified) ? `
+    <div class="compare">
+      <div class="claimed"><div class="k">Candidate stated</div>${esc(f.claimed)||"Not applicable"}</div>
+      <div class="${sev}"><div class="k">Smart Report verified</div>${f.verified||"Pending"}</div>
+    </div>`:"";
+  return `
+    <div class="finding">
+      <div class="f-top">${tag}<h4>${f.title} ${citeChips(c,f.cites)}</h4></div>
+      ${compare}
+      ${f.note?`<p class="f-note">${f.note} ${compare?"":citeChips(c,f.cites)}</p>`:""}
+      ${f.ctx?`<div class="ctx-row">
+        <button class="ghost-btn sm" data-ctx="${c.id}" ${state.ctxReq[c.id]?"disabled":""}>${state.ctxReq[c.id]?"Context requested ✓":"Request candidate context"}</button>
+        <span class="ctx-hint">${state.ctxReq[c.id]?"The candidate was invited to share their side. Any reply is attached to this report.":"Fair chance: invite the candidate to share their side before any decision."}</span>
+      </div>`:""}
+    </div>`;
+}
+
+function sectionHTML(c,s){
+  const minLvl = SECTION_LEVELS[s.key]||2;
+  const [bk,bl] = STATUS_BADGE[s.status]||["pending","Pending"];
+  const head = `
+    <div class="sec-head">
+      <h3>${s.title}</h3>
+      <span class="lvl-pill">L${minLvl}+</span>
+      ${badge(bk,bl)}
+    </div>`;
+  if(state.level < minLvl){
+    return `<section class="section">${head}
+      <div class="sec-locked">${icons.lock}
+        <span><b>Requires Level ${minLvl} access.</b> Your SLA tier (Level ${state.level}) does not include this section. Details stay hidden; only the status above is visible.</span>
+      </div></section>`;
+  }
+  if(state.level===1){ return "" }
+  return `<section class="section">${head}<div class="sec-body">${s.findings.map(f=>findingHTML(c,f)).join("")}</div></section>`;
+}
+
+function renderReport(){
+  const c = CASES.find(x=>x.id===state.caseId); if(!c){state.view="queue";return renderQueue()}
+  const bannerKind = c.signal==="routine" && c.status==="clear" ? "clear" : c.signal;
+  const bannerIcon = bannerKind==="clear" ? icons.check : icons.alert;
+  const l1 = state.level===1;
+  const l1sections = l1?`
+      <section class="section"><div class="sec-head"><h3>Check status</h3>${badge("routine","Level 1 summary")}</div>
+      <div class="sec-body">${c.sections.map(s=>{
+        const [bk,bl]=STATUS_BADGE[s.status]||["pending","Pending"];
+        return `<div class="finding"><div class="f-top">${badge(bk,bl)}<h4>${s.title}</h4></div></div>`}).join("")}
+      <p class="f-note" style="padding-top:12px">Level 1 shows statuses only. Findings, discrepancies and sources require Level 2 or higher under your SLA.</p></div></section>`
+    : c.sections.map(s=>sectionHTML(c,s)).join("");
+  app.innerHTML = `
+    <div class="report-top">
+      <button class="backlink" id="back">${icons.back} Back to queue</button>
+      <div class="exp-group">
+        <span class="k">Export</span>
+        <button class="ghost-btn sm" id="expPdf">PDF</button>
+        <button class="ghost-btn sm" id="expPrint">Print</button>
+      </div>
+    </div>
+    <div class="print-only">
+      <span class="wordmark">Smart <em>Report</em></span>
+      <span class="print-meta">Confidential screening report · Level ${state.level}</span>
+    </div>
+    <div class="report-head">
+      <div class="rh-main">
+        <div>
+          <h2>${c.name}</h2>
+          <div class="meta">${c.role} · ${c.location} · ${c.pkg}</div>
+        </div>
+        <div class="rh-badges">${badge(c.signal,SIGNAL_LABEL[c.signal]+" signal")}${
+          c.status==="clear"?badge("clear","Complete and clear"):c.status==="progress"?badge("pending","In progress"):badge("attention","Review required")}</div>
+      </div>
+      <div class="signal-banner ${bannerKind}">${bannerIcon}<span><b>Why this case is ${SIGNAL_LABEL[c.signal].toLowerCase()}:</b> ${c.signalReason}</span></div>
+      <div class="rh-grid">
+        <div><div class="k">Report ID</div><div class="v">${c.id}</div></div>
+        <div><div class="k">Order no.</div><div class="v">${c.order}</div></div>
+        <div><div class="k">Ordered</div><div class="v">${c.ordered}</div></div>
+        <div><div class="k">Due</div><div class="v">${c.due}</div></div>
+        <div><div class="k">Checks complete</div><div class="v">${c.progress[0]} of ${c.progress[1]}</div></div>
+        ${c.eta?`<div><div class="k">Estimated completion</div><div class="v">${c.eta}</div></div>`:""}
+        <div><div class="k">Adjudication</div><div class="v">${adjOf(c)}</div><div class="adj-sub">${adjText(c)}${slaChips(c)}</div></div>
+      </div>
+      ${CASE_ADJ[c.id].mode==="manual"?`
+      <div class="decide">
+        <span class="k">Recruiter adjudication</span>
+        ${state.decisions[c.id]?`
+          ${state.decisions[c.id]==="eligible"?badge("clear","Marked eligible"):badge("critical","Adverse action started")}
+          <button class="ghost-btn sm" data-undo="${c.id}">Undo</button>`
+        :`
+          <button class="btn-solid" data-decide="eligible">Mark eligible</button>
+          <button class="btn-danger" data-decide="adverse" ${state.ctxReq[c.id]?"":"disabled"}>Start adverse action</button>
+          <span class="ctx-hint">${state.ctxReq[c.id]?"Candidate context requested. Review any reply before adverse action.":"Adverse action unlocks after candidate context is requested (fair chance)."}</span>`}
+      </div>`:""}
+    </div>
+    ${state.level>=2?chatCard(c):""}
+    ${l1sections}
+    <p class="print-foot">Smart Report · fictional data · adjudication stays with the recruiter</p>
+  `;
+  document.getElementById("back").addEventListener("click",()=>{state.view="queue";render()});
+  document.getElementById("expPrint").addEventListener("click",e=>exportReport(c,e.currentTarget));
+  document.getElementById("expPdf").addEventListener("click",e=>{window.jspdf?dl(pdfBlob(c),fileSlug(c)+".pdf"):flash(e.currentTarget,"Lib not loaded")});
+  app.querySelectorAll("[data-ctx]").forEach(b=>b.addEventListener("click",()=>{state.ctxReq[b.dataset.ctx]=true;render()}));
+  app.querySelectorAll("[data-decide]").forEach(b=>b.addEventListener("click",()=>{state.decisions[c.id]=b.dataset.decide;render()}));
+  const ub=app.querySelector("[data-undo]");
+  if(ub)ub.addEventListener("click",()=>{delete state.decisions[c.id];render()});
+  wireCites(app);
+  if(state.level>=2) wireChat(c);
+}
+
+function renderCandidate(){
+  const c = CASES.find(x=>x.id===state.candId)||CASES[0];
+  const [d,t]=c.progress;
+  app.innerHTML = `
+    <h1 class="view-title">Candidate portal</h1>
+    <p class="view-sub">What the candidate sees: each check shows complete or not complete. Findings, discrepancies and sources are never exposed here.</p>
+    <div class="cand-picker" role="group" aria-label="Preview as candidate">
+      ${CASES.map(x=>`<button data-cand="${x.id}" aria-pressed="${x.id===c.id}">${x.name}</button>`).join("")}
+    </div>
+    <div class="cand-card">
+      <div class="cand-hero">
+        <h2>Hi ${c.name.split(" ")[0]}, here's your background check</h2>
+        <p>Ordered by your prospective employer on ${c.ordered} · Reference ${c.id}</p>
+        <div class="cand-prog"><div class="bar"><i style="width:${Math.round(d/t*100)}%"></i></div><span>${d} of ${t} checks complete${c.eta?` · estimated completion ${c.eta}`:""}</span></div>
+      </div>
+      <div class="cand-rows">
+        ${c.sections.map(s=>{
+          const done = s.status!=="pending";
+          return `<div class="cand-row">
+            <span class="nm">${s.title}<span class="sub">${done?"Finished and included in your report":"Still being processed"+(c.eta?" · ETA "+c.eta:"")}</span></span>
+            ${done?badge("clear","Complete"):badge("pending","Not complete")}
+          </div>`}).join("")}
+      </div>
+      ${state.ctxReq[c.id]?`<div class="ctx-banner">
+        <b>Your reviewer invited you to add context.</b> A finding in your report can include your side of the story before any decision is made.
+        <div style="margin-top:8px">${state.ctxSent[c.id]?`<span class="ctx-hint">Context sent. It will be attached to your report for the reviewer.</span>`:`<button class="ghost-btn sm" id="ctxSend">Share your context</button>`}</div>
+      </div>`:""}
+      <div class="cand-foot"><b>Your rights:</b> you may request a free copy of your report and dispute any information you believe is inaccurate or incomplete. Disputes are reinvestigated at no cost to you.</div>
+    </div>`;
+  app.querySelectorAll("[data-cand]").forEach(b=>b.addEventListener("click",()=>{state.candId=b.dataset.cand;render()}));
+  const cs=document.getElementById("ctxSend");
+  if(cs)cs.addEventListener("click",()=>{state.ctxSent[c.id]=true;render()});
+}
+
+/* =========================================================
+   Source drawer (NotebookLM-style citations)
+========================================================= */
+const drawer=document.getElementById("drawer"), scrim=document.getElementById("scrim");
+let lastCite=null;
+function openSource(caseId,srcId,btn){
+  const c=CASES.find(x=>x.id===caseId); const s=c.sources.find(x=>x.id===srcId); if(!s)return;
+  lastCite=btn||null;
+  document.querySelectorAll(".cite.active").forEach(x=>x.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  const bodyHTML = s.body.map(p=>{
+    if(s.mark && p.includes(s.mark)) return `<p>${p.replace(s.mark,`<mark id="dwMark">${s.mark}</mark>`)}</p>`;
+    return `<p>${p}</p>`;
+  }).join("");
+  drawer.innerHTML=`
+    <div class="dw-head">
+      <span class="num">${s.id}</span>
+      <div><h4 id="dwTitle">${s.title}</h4><div class="meta">${s.type} · ${s.date}</div></div>
+      <button class="dw-close" id="dwClose" aria-label="Close sources">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="dw-doc">${bodyHTML}</div>
+      <div class="dw-label">All sources in this report</div>
+      <div class="dw-list">
+        ${c.sources.map(o=>`<button data-jump="${o.id}" class="${o.id===s.id?"current":""}"><span class="n">${o.id}</span><span>${o.title}</span></button>`).join("")}
+      </div>
+    </div>`;
+  document.body.classList.add("drawer-open");
+  document.getElementById("dwClose").addEventListener("click",closeDrawer);
+  drawer.querySelectorAll("[data-jump]").forEach(b=>b.addEventListener("click",()=>openSource(caseId,+b.dataset.jump)));
+  const m=document.getElementById("dwMark"); if(m){m.scrollIntoView({block:"center",behavior:"smooth"})}
+  drawer.querySelector(".dw-close").focus({preventScroll:true});
+}
+function closeDrawer(){
+  document.body.classList.remove("drawer-open");
+  document.querySelectorAll(".cite.active").forEach(x=>x.classList.remove("active"));
+  if(lastCite){lastCite.focus({preventScroll:true});lastCite=null}
+}
+scrim.addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("drawer-open"))closeDrawer()});
+
+/* SLA criteria panel */
+function adjText(c){const m=CASE_ADJ[c.id].mode;return m==="auto"?"by Smart Report (auto)":m==="manual"?"by recruiter":"pending completion"}
+function assessOf(c){
+  if(c.status==="progress") return ["pending","Processing"];
+  if(c.status==="clear") return ["clear","Eligible"];
+  return ["attention","Review"];
+}
+function adjOf(c){
+  const d=state.decisions[c.id];
+  if(d==="eligible") return "Eligible · recruiter";
+  if(d==="adverse") return "Adverse action · recruiter";
+  const m=CASE_ADJ[c.id].mode;
+  if(m==="auto") return "Adjudicated · Smart Report";
+  if(m==="pending") return "Awaiting completion";
+  return "Not adjudicated";
+}
+function slaChips(c){
+  const a=CASE_ADJ[c.id];
+  if(state.level<3||!a.rules.length) return "";
+  return " · "+a.rules.map(r=>`<button class="cite sla" data-sla="${r}" aria-label="Open SLA rule ${r}">SLA ${r}</button>`).join("");
+}
+function openSLA(highlight=[]){
+  drawer.innerHTML=`
+    <div class="dw-head">
+      <span class="num">§</span>
+      <div><h4 id="dwTitle">SLA adjudication criteria</h4><div class="meta">Client SLA v2.3 · read-only · visible from Level 3</div></div>
+      <button class="dw-close" id="dwClose" aria-label="Close SLA criteria">✕</button>
+    </div>
+    <div class="dw-body">
+      <p class="rule-intro">Set with your compliance team at onboarding. Every screening cites the rule that routed it to auto-adjudication by Smart Report or to recruiter review.</p>
+      <div>${SLA_RULES.map(r=>`
+        <div class="rule ${highlight.includes(r.id)?"current":""}" id="rule-${r.id}">
+          <span class="rid">SLA ${r.id}</span>
+          <span class="rtxt"><b>${r.area}</b>${r.rule}</span>
+          ${r.auto?badge("clear","Auto"):badge("attention","Review")}
+        </div>`).join("")}
+      </div>
+    </div>`;
+  document.body.classList.add("drawer-open");
+  document.getElementById("dwClose").addEventListener("click",closeDrawer);
+  const t=highlight.length?document.getElementById("rule-"+highlight[0]):null;
+  if(t)t.scrollIntoView({block:"center",behavior:"smooth"});
+  drawer.querySelector(".dw-close").focus({preventScroll:true});
+}
+
+/* =========================================================
+   Ask this report — scripted assistant (prototype)
+========================================================= */
+const CASE_QA={
+ "AB-2026-1187":[
+  {q:"Why is this case critical?",keys:["critical","why","signal"],minLevel:3,
+   a:'Two findings drive the critical signal: a Cook County misdemeanor the candidate answered "No" to in the disclosure <cbtn>5</cbtn><cbtn>1</cbtn>, and a 14-month gap between stated and verified start dates at Meridian Capital <cbtn>2</cbtn>. Under <sbtn>4.2</sbtn> an undisclosed record always routes to recruiter review.'},
+  {q:"What did the employer confirm?",keys:["employer","meridian","confirm"],minLevel:2,
+   a:'Meridian Capital HR confirmed the title Analyst II (not Senior Analyst) with a start date of June 2022, 14 months later than stated <cbtn>2</cbtn>. Northgate Insurance confirmed dates and title exactly as the candidate stated <cbtn>3</cbtn>.'},
+  {q:"What does the SLA say about the record?",keys:["sla","rule","record"],minLevel:3,
+   a:'Rule <sbtn>4.2</sbtn> applies: a record the candidate did not disclose requires recruiter review, with individualized assessment before any adverse action. The case cannot auto-clear.'},
+  {q:"Is anything verified clean?",keys:["clean","clear","verified","positive"],minLevel:2,
+   a:'Yes. Identity <cbtn>1</cbtn>, education <cbtn>4</cbtn> and the drug screen (negative) <cbtn>7</cbtn> all verified with no issues, and Northgate employment matched exactly <cbtn>3</cbtn>.'}
+ ],
+ "AB-2026-1203":[
+  {q:"Why does this need review?",keys:["review","why","signal","discrepancy"],minLevel:2,
+   a:'One discrepancy: the registrar shows the BSN conferred May 2020, a year later than stated <cbtn>3</cbtn><cbtn>1</cbtn>. Under <sbtn>3.2</sbtn> a conferral variance over 6 months routes to recruiter review. Everything else verified clean.'},
+  {q:"Is her nursing license valid?",keys:["license","valid","nursing","board"],minLevel:2,
+   a:'Yes. The Arizona Board of Nursing shows RN21488 active, renewed on schedule, with no disciplinary actions <cbtn>4</cbtn>.'}
+ ]
+};
+function qaHTML(id,h){
+  return h
+    .replace(/<cbtn>(\d+)<\/cbtn>/g,(m,n)=>`<button class="cite" data-case="${id}" data-src="${n}">${n}</button>`)
+    .replace(/<sbtn>([\d.]+)<\/sbtn>/g,(m,r)=>`<button class="cite sla" data-sla="${r}">SLA ${r}</button>`);
+}
+function answerFor(c,text){
+  const t=text.toLowerCase();
+  const hit=(CASE_QA[c.id]||[]).find(x=>x.keys.some(k=>t.includes(k)));
+  if(hit){
+    if(state.level<(hit.minLevel||2)) return `Your access level (Level ${state.level}) does not include the section needed to answer that.`;
+    return qaHTML(c.id,hit.a);
+  }
+  const [dn,tt]=c.progress;
+  if(/(how long|took|turnaround|duration)/.test(t)) return c.completed
+    ? `The screening was ordered on ${c.ordered} and all ${tt} checks finished on ${c.completed}.`
+    : `The screening was ordered on ${c.ordered}. ${dn} of ${tt} checks are done so far${c.eta?`, with estimated completion ${c.eta}`:""}.`;
+  if(/(due|deadline)/.test(t)) return `This report is due ${c.due} (in ${c.dueIn}).`;
+  if(/(eta|when will|estimated|finish)/.test(t)) return c.eta?`Estimated completion is ${c.eta}.`:`All ${tt} checks are already complete${c.completed?` (finished ${c.completed})`:""}.`;
+  if(/(pending|missing|remaining|left to)/.test(t)){
+    const p=c.sections.filter(s=>s.status==="pending").map(s=>s.title);
+    return p.length?`Still in progress: ${p.join(", ")}.`:`Nothing is pending. All checks are complete.`;
+  }
+  if(/(source|where .*from|document)/.test(t)) return c.sources.length
+    ? `This report draws on ${c.sources.length} verified sources: ${c.sources.map(s=>s.title).join("; ")}. Click any numbered chip in the findings to open one.`
+    : `Source documents are attached to each finding when its check completes. This case has none flagged yet.`;
+  if(/(discrepan|issue|problem|flag|mismatch)/.test(t)){
+    const vis=c.sections.filter(s=>state.level>=(SECTION_LEVELS[s.key]||2));
+    const ds=[];vis.forEach(s=>s.findings.forEach(f=>{if(f.kind==="discrepancy")ds.push(f.title)}));
+    const hidden=c.sections.some(s=>state.level<(SECTION_LEVELS[s.key]||2)&&s.findings.some(f=>f.kind==="discrepancy"));
+    if(!ds.length&&!hidden) return `No discrepancies were found in this report.`;
+    return (ds.length?`${ds.length===1?"One discrepancy":ds.length+" discrepancies"} within your access level: ${ds.join("; ")}.`:`No discrepancies within your access level.`)+(hidden?` Some findings sit in sections above your access level.`:"");
+  }
+  if(t.includes("status")||t.includes("progress")) return `${dn} of ${tt} checks are complete. Status: ${c.adjudication}. Signal: ${SIGNAL_LABEL[c.signal]}. Adjudication ${adjText(c)}.`;
+  if(t.includes("hire")||t.includes("decision")||t.includes("reject")) return `That decision stays with you. I can show the facts and the SLA rule that applies, but adjudication and any adverse action are human calls.`;
+  return `I can only answer from what is in this report and its sources. You can ask about status, timing, pending checks, discrepancies or sources.`;
+}
+function chatCard(c){
+  const qs=(CASE_QA[c.id]||[]).filter(x=>state.level>=(x.minLevel||2)).map(x=>x.q);
+  qs.push("What's the status?","How long did this screening take?");
+  return `
+  <section class="section" id="askCard">
+    <div class="sec-head"><h3>Ask this report</h3><span class="chat-note">Answers come only from this report's sources, within your access level. Decisions stay human.</span></div>
+    <div class="sec-body">
+      <div class="chat-log" id="chatLog">
+        <div class="msg ai">Hi! Ask me about ${c.name.split(" ")[0]}'s report. Every answer is grounded in its verified sources.</div>
+      </div>
+      <div class="chips-row">${qs.map(t=>`<button data-chatq="${escq(t)}">${escq(t)}</button>`).join("")}</div>
+      <div class="chat-input">
+        <input id="chatIn" placeholder="Ask about this report" aria-label="Ask about this report">
+        <button id="chatSend">Ask</button>
+      </div>
+    </div>
+  </section>`;
+}
+function wireCites(root){
+  root.querySelectorAll(".cite[data-src]:not([data-wired])").forEach(b=>{b.dataset.wired=1;b.addEventListener("click",e=>{e.stopPropagation();openSource(b.dataset.case,+b.dataset.src,b)})});
+  root.querySelectorAll("[data-sla]:not([data-wired])").forEach(b=>{b.dataset.wired=1;b.addEventListener("click",e=>{e.stopPropagation();openSLA([b.dataset.sla])})});
+}
+function wireChat(c){
+  const log=document.getElementById("chatLog"), inp=document.getElementById("chatIn");
+  if(!log) return;
+  const send=t=>{
+    t=(t||"").trim(); if(!t) return;
+    log.insertAdjacentHTML("beforeend",`<div class="msg me">${escq(t)}</div>`);
+    log.insertAdjacentHTML("beforeend",`<div class="msg ai">${answerFor(c,t)}</div>`);
+    wireCites(log);
+    log.lastElementChild.scrollIntoView({block:"nearest",behavior:"smooth"});
+    inp.value="";
+  };
+  document.getElementById("chatSend").addEventListener("click",()=>send(inp.value));
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter")send(inp.value)});
+  document.querySelectorAll("[data-chatq]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.chatq)));
+}
+
+/* =========================================================
+   Export — print to PDF, clipboard summary as fallback
+========================================================= */
+function exportSummary(c){
+  const lines=[
+    "ACCURATE SIGNAL SCREENING REPORT",
+    `${c.name} · ${c.role} · ${c.location}`,
+    `Report ${c.id} · Order ${c.order} · Ordered ${c.ordered} · Due ${c.due}`,
+    `Signal: ${SIGNAL_LABEL[c.signal]}. ${c.signalReason}`,
+    `Adjudication: ${adjOf(c)}`,""];
+  c.sections.forEach(s=>{
+    const min=SECTION_LEVELS[s.key]||2;
+    const bl=(STATUS_BADGE[s.status]||["","-"])[1];
+    if(state.level<min){lines.push(`${s.title}: ${bl} (details require Level ${min})`);return}
+    lines.push(`${s.title}: ${bl}`);
+    if(state.level>=2) s.findings.forEach(f=>{
+      lines.push(`  - ${f.title}`);
+      if(f.claimed) lines.push(`      stated: ${f.claimed}`);
+      if(f.verified) lines.push(`      verified: ${String(f.verified).replace(/<[^>]+>/g,"")}`);
+    });
+  });
+  lines.push("","Exported at access level "+state.level+" · Smart Report prototype, fictional data.");
+  return lines.join("\n");
+}
+function flash(btn,txt){const o=btn.textContent;btn.textContent=txt;setTimeout(()=>{btn.textContent=o},2200)}
+const strip=s=>String(s==null?"":s).replace(/<[^>]+>/g,"");
+function listXlsx(list){
+  const rows=[["Candidate","Role","Location","Report ID","Order no.","Signal","Status","Adjudication","Due","Checks"]];
+  list.forEach(c=>{
+    const status=c.status==="clear"?"Complete and clear":c.status==="progress"?"In progress":"Needs review";
+    rows.push([c.name,c.role,c.location,c.id,c.order,SIGNAL_LABEL[c.signal],status,adjOf(c),c.due,c.progress[0]+" of "+c.progress[1]]);
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[{wch:22},{wch:28},{wch:16},{wch:16},{wch:14},{wch:12},{wch:20},{wch:26},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,"Status");
+  return new Blob([XLSX.write(wb,{type:"array",bookType:"xlsx"})],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+function pdfBlob(c){
+  const doc=new window.jspdf.jsPDF();
+  let y=16; const W=180;
+  const line=(txt,size=10,bold=false)=>{
+    doc.setFontSize(size);doc.setFont("helvetica",bold?"bold":"normal");
+    doc.splitTextToSize(txt,W).forEach(l=>{if(y>282){doc.addPage();y=16}doc.text(l,14,y);y+=size*0.5});
+    y+=1.5;
+  };
+  line("Smart Report | Confidential screening report",14,true);
+  line(`${c.name} · ${c.role} · ${c.location}`,11,true);
+  line(`Report ${c.id} · Order ${c.order} · Ordered ${c.ordered}${c.completed?` · Completed ${c.completed}`:""}`);
+  line(`Signal: ${SIGNAL_LABEL[c.signal]}. ${c.signalReason}`);
+  line(`Adjudication: ${adjOf(c)} · Exported at access level ${state.level}`);
+  y+=3;
+  c.sections.forEach(s=>{
+    const min=SECTION_LEVELS[s.key]||2;
+    const bl=(STATUS_BADGE[s.status]||["","Pending"])[1];
+    line(`${s.title}  [${bl}]`,12,true);
+    if(state.level<min){line(`Locked: requires Level ${min} access.`);y+=2;return}
+    s.findings.forEach(f=>{
+      line(`• ${strip(f.title)}`,10,true);
+      if(f.claimed)line(`   Stated: ${strip(f.claimed)}`);
+      if(f.verified)line(`   Verified: ${strip(f.verified)}`);
+      if(f.note)line(`   ${strip(f.note)}`);
+    });
+    y+=2;
+  });
+  line("Smart Report prototype, fictional data.",8);
+  return doc.output("blob");
+}
+async function dl(blob,name){
+  try{
+    if(window.claude&&window.claude.use){
+      const d=await window.claude.use("downloads");
+      if(d){await d.save({filename:name,data:blob});return}
+    }
+  }catch(err){}
+  const u=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=u;a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),4000);
+}
+const fileSlug=c=>`${c.name.replace(/\s+/g,"_")}_${c.id}`;
+async function zipAll(sel,btn){
+  if(!(window.JSZip&&window.jspdf))return flash(btn,"Export libraries not loaded");
+  const o=btn.textContent;btn.textContent="Preparing ZIP…";
+  try{
+    const zip=new JSZip();
+    sel.forEach(c=>{zip.file(fileSlug(c)+".pdf",pdfBlob(c))});
+    const blob=await zip.generateAsync({type:"blob"});
+    dl(blob,"smart-report-reports.zip");
+    btn.textContent=o;
+  }catch(err){btn.textContent=o;flash(btn,"Export failed")}
+}
+function exportReport(c,btn){
+  let printed=false;
+  try{window.print();printed=true}catch(err){}
+  if(!printed){
+    try{
+      navigator.clipboard.writeText(exportSummary(c))
+        .then(()=>flash(btn,"Summary copied"))
+        .catch(()=>flash(btn,"Export unavailable here"));
+    }catch(err){flash(btn,"Export unavailable here")}
+  }
+}
+
+/* =========================================================
+   Controls + boot
+========================================================= */
+const lvlSelect=document.getElementById("level"), lvlNote=document.getElementById("lvlNote"), lvlWrap=document.getElementById("lvlWrap");
+const btnR=document.getElementById("roleRecruiter"), btnC=document.getElementById("roleCandidate");
+function setRole(r){
+  state.role=r;
+  btnR.setAttribute("aria-pressed",r==="recruiter");
+  btnC.setAttribute("aria-pressed",r==="candidate");
+  lvlWrap.style.display = r==="recruiter" ? "flex" : "none";
+  updateSlaBtn();
+  closeDrawer(); render();
+}
+btnR.addEventListener("click",()=>setRole("recruiter"));
+btnC.addEventListener("click",()=>setRole("candidate"));
+lvlSelect.addEventListener("change",()=>{state.level=+lvlSelect.value;lvlNote.textContent=LEVEL_NOTES[state.level];updateSlaBtn();render()});
+const slaBtn=document.getElementById("slaBtn");
+slaBtn.addEventListener("click",()=>openSLA());
+function updateSlaBtn(){slaBtn.style.display=(state.role==="recruiter"&&state.level>=3)?"inline-block":"none"}
+function watchAction(c){
+  const rules=(CASE_ADJ[c.id]||{}).rules||[];
+  if(c.signal==="critical"&&rules.includes("4.2")){
+    if(state.level<3) return "Review the date and title mismatch before you decide.";
+    if(!state.ctxReq[c.id]) return "Request context and review the undisclosed record.";
+    return "Review the candidate's reply before any adverse action.";
+  }
+  if(rules.includes("3.2")) return "Confirm the degree date.";
+  if(rules.includes("2.2")) return "Review the employment date gap.";
+  if(c.status==="review") return "This case is waiting for your review.";
+  return "This screening is critical.";
+}
+function watchItems(){
+  return CASES.filter(c=>{
+    if(state.decisions[c.id]) return false;
+    return c.status==="review"||c.signal==="critical";
+  }).sort((a,b)=>SIGNAL_ORDER[a.signal]-SIGNAL_ORDER[b.signal]);
+}
+function renderWatcher(){
+  const wrap=document.getElementById("watchWrap");
+  const btn=document.getElementById("watchBtn");
+  const num=document.getElementById("watchNum");
+  const tip=document.getElementById("watchTip");
+  const mouth=document.getElementById("botMouth");
+  const pop=document.getElementById("watchPop");
+  if(state.role!=="recruiter"){
+    state.watchOpen=false;
+    wrap.hidden=true;
+    return;
+  }
+  wrap.hidden=false;
+  const items=watchItems();
+  const crit=items.filter(c=>c.signal==="critical").length;
+  const n=items.length;
+  btn.classList.remove("critical","attention");
+  if(crit) btn.classList.add("critical");
+  else if(n) btn.classList.add("attention");
+  num.textContent=n?String(n):"";
+  const msg=!n?"Queue is clear.":crit?`${crit} critical · ${n} need you`:`${n} need you`;
+  tip.textContent=msg;
+  if(mouth) mouth.setAttribute("d", crit
+    ? "M12.2 22.4c1.2-.8 2.3-1.2 3.8-1.2s2.6.4 3.8 1.2"
+    : n
+      ? "M12.5 21.4h7"
+      : "M12.5 21.2c1.1.9 2.2 1.3 3.5 1.3s2.4-.4 3.5-1.3");
+  const label=!n?"Status bot. Queue is clear.":crit?`Status bot. ${crit} critical, ${n} need you.`: `Status bot. ${n} need you.`;
+  btn.setAttribute("aria-label",label);
+  btn.setAttribute("aria-expanded",state.watchOpen?"true":"false");
+  pop.hidden=!state.watchOpen;
+  pop.innerHTML=items.length?items.map(c=>`
+    <button class="watch-item" type="button" data-watch="${c.id}">
+      <span class="watch-item-top"><strong>${escq(c.name)}</strong>${badge(c.signal==="critical"?"critical":"attention",c.signal==="critical"?"Critical":"Needs you")}</span>
+      <span class="watch-act">${escq(watchAction(c))}</span>
+      <span class="watch-due">Due in ${escq(c.dueIn)}</span>
+    </button>`).join("")
+    :`<p class="watch-empty">Queue is clear. I'll speak if a case turns critical or needs you.</p>`;
+}
+function render(){
+  renderWatcher();
+  if(state.role==="candidate") return renderCandidate();
+  if(state.view==="report") return renderReport();
+  renderQueue();
+}
+const watchBtn=document.getElementById("watchBtn");
+const watchPop=document.getElementById("watchPop");
+const watchWrap=document.getElementById("watchWrap");
+watchBtn.addEventListener("click",()=>{state.watchOpen=!state.watchOpen;renderWatcher()});
+watchPop.addEventListener("click",e=>{
+  const b=e.target.closest("[data-watch]");
+  if(!b) return;
+  state.watchOpen=false;
+  state.view="report";
+  state.caseId=b.dataset.watch;
+  render();
+  window.scrollTo(0,0);
+});
+document.addEventListener("click",e=>{
+  if(state.watchOpen&&!watchWrap.contains(e.target)){state.watchOpen=false;renderWatcher()}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&state.watchOpen){state.watchOpen=false;renderWatcher();watchBtn.focus()}
+});
+lvlNote.textContent=LEVEL_NOTES[state.level];
+updateSlaBtn();
+
+const INTAKE_MS=60000;
+const INTAKE_POOL=[
+  {name:"Elena Vasquez",role:"Warehouse Supervisor",location:"Dallas, TX",geo:"DAL",pkg:"Standard package · 4 checks",signal:"critical",status:"review",progress:[4,4],mode:"manual",rules:["4.2"],reason:"County record found that the candidate did not disclose.",
+    sections:[
+      {key:"identity",title:"Identity verification",status:"verified",findings:[{kind:"match",title:"SSN trace and address history",note:"Trace matches the applicant.",cites:[]}]},
+      {key:"criminal",title:"Criminal record search",status:"record",findings:[{kind:"discrepancy",severity:"critical",ctx:true,title:"Dallas County record, not disclosed",claimed:"Application disclosure: “No”",verified:"Misdemeanor on file (2022)",note:"Flagged for individualized assessment before any adverse action.",cites:[]}]}
+    ]},
+  {name:"Marcus Bell",role:"Staff Accountant",location:"Denver, CO",geo:"DEN",pkg:"Finance package · 5 checks",signal:"attention",status:"review",progress:[5,5],mode:"manual",rules:["3.2"],reason:"Degree conferral date differs by one year from the application.",
+    sections:[
+      {key:"education",title:"Education",status:"discrepancy",findings:[{kind:"discrepancy",severity:"attention",title:"B.S. Accounting conferral date",claimed:"Conferred May 2018",verified:"Conferred May 2019",note:"Registrar shows conferral one year later than stated.",cites:[]}]}
+    ]},
+  {name:"Aisha Rahman",role:"Graphic Designer",location:"Portland, OR",geo:"PDX",pkg:"Standard package · 4 checks",signal:"routine",status:"progress",progress:[1,4],mode:"pending",rules:[],reason:"Just ordered: identity verified, remaining checks queued.",
+    sections:[
+      {key:"identity",title:"Identity verification",status:"verified",findings:[{kind:"match",title:"SSN trace and address history",note:"Trace matches the applicant.",cites:[]}]},
+      {key:"employment",title:"Employment history",status:"pending",findings:[{kind:"note",title:"Verifications queued",note:"Employer verifications queued.",cites:[]}]}
+    ]},
+  {name:"Noah Patel",role:"Operations Analyst",location:"Boston, MA",geo:"BOS",pkg:"Standard package · 4 checks",signal:"critical",status:"review",progress:[4,4],mode:"manual",rules:["2.2"],reason:"Start date at the most recent employer is 8 months later than stated.",
+    sections:[
+      {key:"employment",title:"Employment history",status:"discrepancy",findings:[{kind:"discrepancy",severity:"critical",title:"Harbor Line Logistics: dates",claimed:"Mar 2022 – present",verified:"Nov 2022 – present",note:"Employer HR confirms a start date 8 months later than stated.",cites:[]}]}
+    ]}
+];
+let intakeSeq=0, intakeCursor=0, nextIntakeAt=Date.now()+INTAKE_MS;
+const intakeLog=[];
+let intakeRunning=true, intakeRemain=INTAKE_MS;
+function intakeClockText(){
+  if(!intakeRunning) return "Paused";
+  const s=Math.max(0,Math.ceil((nextIntakeAt-Date.now())/1000));
+  return `Next screening in ${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+}
+function setIntakeRunning(on){
+  if(on===intakeRunning) return;
+  if(on) nextIntakeAt=Date.now()+Math.max(0,intakeRemain);
+  else intakeRemain=Math.max(0,nextIntakeAt-Date.now());
+  intakeRunning=on;
+  const sec=document.querySelector(".intake");
+  if(sec) sec.classList.toggle("paused",!on);
+  const clock=document.getElementById("intakeClock");
+  if(clock) clock.textContent=intakeClockText();
+  const start=document.getElementById("intakeStart");
+  const stop=document.getElementById("intakeStop");
+  if(start) start.disabled=on;
+  if(stop) stop.disabled=!on;
+}
+function wireIntake(){
+  const start=document.getElementById("intakeStart");
+  const stop=document.getElementById("intakeStop");
+  if(start) start.addEventListener("click",()=>setIntakeRunning(true));
+  if(stop) stop.addEventListener("click",()=>setIntakeRunning(false));
+}
+function intakeHTML(){
+  const rows=intakeLog.length?intakeLog.map(x=>`
+    <div class="intake-row">
+      ${badge(x.signal,SIGNAL_LABEL[x.signal])}
+      <span class="who"><strong>${escq(x.name)}</strong><span>${escq(x.reason)}</span></span>
+      <em>${x.id===state.freshId?"Just in":"Received"}</em>
+    </div>`).join(""):`<p class="intake-empty">Waiting for the next screening. The status bot updates when it arrives.</p>`;
+  return `<section class="intake${intakeRunning?"":" paused"}" aria-label="Live intake">
+    <div class="intake-head">
+      <div><h3>Live intake</h3><p>A new screening arrives every minute. The status bot at the top receives it.</p></div>
+      <div class="intake-side">
+        <b id="intakeClock">${intakeClockText()}</b>
+        <div class="intake-ctrls">
+          <button type="button" class="ghost-btn sm" id="intakeStart"${intakeRunning?" disabled":""}>Start</button>
+          <button type="button" class="ghost-btn sm" id="intakeStop"${intakeRunning?"":" disabled"}>Stop</button>
+        </div>
+      </div>
+    </div>
+    ${rows}
+  </section>`;
+}
+function buildIntake(spec){
+  intakeSeq+=1;
+  const id="AB-2026-"+(1400+intakeSeq);
+  const c={
+    id, order:"ORD-"+(56100+intakeSeq), name:spec.name, role:spec.role, location:spec.location, geo:spec.geo, pkg:spec.pkg,
+    ordered:"Nov 16, 2026", due:"Nov 23, 2026", dueIn:"7 days",
+    signal:spec.signal, status:spec.status, progress:spec.progress, signalReason:spec.reason,
+    adjudication:spec.status==="review"?"Review required":"Pending", sections:spec.sections, sources:[]
+  };
+  CASE_ADJ[id]={mode:spec.mode,rules:spec.rules};
+  return c;
+}
+function announceIntake(c){
+  const btn=document.getElementById("watchBtn");
+  const tip=document.getElementById("watchTip");
+  if(!btn||state.role!=="recruiter") return;
+  btn.classList.add("incoming");
+  if(tip) tip.textContent=`New screening · ${c.name} · ${SIGNAL_LABEL[c.signal]}`;
+  clearTimeout(announceIntake.timer);
+  announceIntake.timer=setTimeout(()=>{btn.classList.remove("incoming");renderWatcher()},5000);
+}
+function arriveIntake(){
+  const spec=INTAKE_POOL[intakeCursor%INTAKE_POOL.length];
+  intakeCursor+=1;
+  const c=buildIntake(spec);
+  CASES.push(c);
+  intakeLog.unshift(c);
+  if(intakeLog.length>4) intakeLog.pop();
+  state.freshId=c.id;
+  nextIntakeAt=Date.now()+INTAKE_MS;
+  if(state.role==="recruiter"&&state.view==="queue") render();
+  else renderWatcher();
+  announceIntake(c);
+}
+setInterval(()=>{
+  if(!intakeRunning) return;
+  if(Date.now()>=nextIntakeAt) arriveIntake();
+  else { const el=document.getElementById("intakeClock"); if(el) el.textContent=intakeClockText(); }
+},1000);
+render();
+</script>
+</body>
+</html>

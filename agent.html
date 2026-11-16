@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Report · Live Agent MVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2063;--ink-soft:#3c4076;--blue:#2f62f6;--blue-dark:#1e46c0;
+  --peri:#aebcec;--peri-pale:#e7ebfa;--peri-ghost:#f4f6fd;
+  --pink:#e8336e;--pink-soft:#fdeaf1;--orange:#e0731d;--orange-soft:#fcefe2;
+  --green:#15895c;--green-soft:#e3f4ec;--line:#dfe4f4;
+  --radius:14px;--shadow:0 1px 2px rgba(29,32,99,.06),0 8px 24px -12px rgba(29,32,99,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lato',system-ui,sans-serif;color:var(--ink);background:var(--peri-ghost);font-size:14px;line-height:1.5}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:4px}
+header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line)}
+.hd{max-width:1060px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.wordmark{font-weight:900;font-size:24px;letter-spacing:-.5px}
+.wordmark em{font-style:normal;color:var(--blue)}
+.chip{font-weight:700;font-size:13px;color:var(--blue-dark);background:var(--peri-pale);border:1px solid var(--peri);border-radius:999px;padding:3px 12px}
+.hd a{margin-left:auto;color:var(--blue);font-weight:700;font-size:13px;text-decoration:none}
+main{max-width:1060px;margin:0 auto;padding:26px 24px 70px}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.sub{color:var(--ink-soft);max-width:680px;margin-bottom:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.card>.head{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.card>.head h2{font-size:15px;font-weight:700;flex:1}
+.card>.body{padding:14px 20px 18px}
+details{border:1px solid var(--peri-pale);border-radius:10px;margin-bottom:8px;background:var(--peri-ghost)}
+summary{cursor:pointer;padding:10px 14px;font-weight:700;font-size:13px}
+summary span{color:var(--ink-soft);font-weight:400}
+details textarea{width:100%;min-height:140px;border:none;border-top:1px solid var(--peri-pale);background:#fff;padding:12px 14px;font:12.5px/1.6 ui-monospace,monospace;color:var(--ink-soft);resize:vertical}
+.runbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 16px}
+.btn{background:var(--blue);color:#fff;font-weight:700;font-size:14px;border-radius:10px;padding:10px 22px}
+.btn:hover{background:var(--blue-dark)}
+.btn[disabled]{opacity:.5;cursor:wait}
+.lvl label{font-size:13px;font-weight:700;color:var(--ink-soft);margin-right:8px}
+select{font:inherit;font-weight:700;color:var(--ink);background:#fff;border:1.5px solid var(--peri);border-radius:10px;padding:7px 10px}
+.hint{font-size:12.5px;color:var(--ink-soft)}
+.err{background:var(--pink-soft);border:1px solid #f3bfd2;color:#8e1744;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none}
+.badge{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:12px;border-radius:999px;padding:5px 12px}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.badge.critical{background:var(--pink-soft);color:var(--pink)}
+.badge.attention{background:var(--orange-soft);color:var(--orange)}
+.badge.routine{background:var(--peri-pale);color:var(--blue-dark)}
+.badge.clear{background:var(--green-soft);color:var(--green)}
+.banner{display:flex;gap:12px;padding:14px 20px;font-size:14px;border-bottom:1px solid var(--line)}
+.banner.critical{background:var(--pink-soft);color:#8e1744}
+.banner.attention{background:var(--orange-soft);color:#7c4007}
+.banner.routine{background:var(--green-soft);color:#0c5e3e}
+.rules{padding:10px 20px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--ink-soft)}
+.sla{font-size:11px;font-weight:700;color:var(--blue-dark);background:var(--peri-pale);border:1px solid var(--peri);border-radius:6px;padding:2px 8px}
+.finding{padding:12px 0;border-bottom:1px solid var(--peri-pale)}
+.finding:last-child{border-bottom:0}
+.f-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.f-top h4{font-size:14px;font-weight:700;flex:1;min-width:200px}
+.note{font-size:13px;color:var(--ink-soft);margin-top:5px;max-width:640px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:660px}
+.compare>div{border-radius:10px;padding:9px 13px;font-size:13px;border:1px solid var(--line)}
+.compare .c{background:var(--peri-ghost)}
+.compare .ok{background:var(--green-soft);border-color:#bfe4d2}
+.compare .bad{background:var(--pink-soft);border-color:#f3bfd2}
+.compare .k{font-size:10.5px;font-weight:700;color:var(--ink-soft);margin-bottom:2px}
+.cite{display:inline-flex;align-items:center;min-width:19px;height:19px;padding:0 6px;margin:0 2px;vertical-align:2px;border-radius:6px;background:var(--peri-pale);border:1px solid var(--peri);color:var(--blue-dark);font-size:11px;font-weight:700}
+.cite:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.chat input{flex:1;font:inherit;font-size:13.5px;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 13px}
+.chat{display:flex;gap:8px;margin-top:10px}
+.msg{border-radius:12px;padding:10px 14px;font-size:13.5px;margin-top:10px;max-width:85%}
+.msg.me{background:var(--ink);color:#fff;margin-left:auto}
+.msg.ai{background:var(--peri-ghost);border:1px solid var(--peri-pale)}
+.drawer-scrim{position:fixed;inset:0;background:rgba(29,32,99,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,94vw);z-index:50;background:#fff;box-shadow:-12px 0 40px -18px rgba(29,32,99,.35);transform:translateX(102%);transition:transform .25s;display:flex;flex-direction:column}
+body.open .drawer{transform:none}body.open .drawer-scrim{opacity:1;pointer-events:auto}
+.dw-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.dw-head h4{font-size:15px;font-weight:700;flex:1}
+.dw-close{width:30px;height:30px;border-radius:8px;background:var(--peri-ghost);color:var(--ink-soft)}
+.dw-body{flex:1;overflow-y:auto;padding:18px 20px;font-size:13px;line-height:1.7;color:var(--ink-soft);white-space:pre-wrap}
+.dw-body mark{background:#fff3a8;color:var(--ink);padding:1px 4px;border-radius:4px;font-weight:700;box-shadow:0 0 0 1.5px #ecd96e}
+footer{max-width:1060px;margin:0 auto;padding:0 24px 40px;font-size:12px;color:var(--ink-soft)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <span class="wordmark">Smart <em>Report</em></span>
+  <span class="chip">Live agent</span>
+  <a href="/">Static demo</a>
+</div></header>
+
+<main>
+  <h1>Live analysis MVP</h1>
+  <p class="sub">The documents below are fictional and editable. Run the agent: the LLM extracts findings with verbatim citations, a citation gate drops anything unsourced, and the SLA matrix decides auto vs review in deterministic code. Edit a document (change a date, remove the court record) and run again to watch the signal change.</p>
+
+  <div class="err" id="err"></div>
+
+  <div class="card"><div class="head"><h2>Case documents · Jordan Avery, Senior Financial Analyst</h2></div>
+    <div class="body" id="docs"></div>
+  </div>
+
+  <div class="runbar">
+    <button class="btn" id="run">Run analysis</button>
+    <span class="lvl"><label for="level">Access level</label><select id="level">
+      <option value="1">Level 1</option><option value="2">Level 2</option>
+      <option value="3" selected>Level 3</option><option value="4">Level 4</option><option value="5">Level 5</option>
+    </select></span>
+    <span class="hint">The level filters what the chat below is allowed to see.</span>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="card" id="askCard" style="display:none">
+    <div class="head"><h2>Ask this report</h2><span class="hint">Grounded in the findings and documents, within your access level.</span></div>
+    <div class="body">
+      <div id="chatLog"></div>
+      <div class="chat"><input id="q" placeholder="Why does this case need review?" aria-label="Ask about this report"><button class="btn" id="send">Ask</button></div>
+    </div>
+  </div>
+</main>
+
+<footer>Smart Report MVP. Fictional data. The agent recommends; adjudication and adverse action stay human.</footer>
+
+<div class="drawer-scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true"></aside>
+
+<script>
+const DOCS=[
+ {id:"app",title:"Candidate application & disclosures",type:"candidate",date:"Nov 10, 2026",text:
+`Section 3: Employment history. Most recent employer: Meridian Capital Group, Chicago IL. Position held: Senior Analyst. Employment dates: March 2021 to August 2026. Reason for leaving: pursuing growth opportunity.
+
+Prior employer: Northgate Insurance, Position: Junior Analyst, June 2018 to February 2021.
+
+Section 4: Education. Bachelor of Science, Finance, University of Illinois, conferred May 2018.
+
+Section 7: Disclosures. "Have you ever been convicted of, or pleaded guilty or no contest to, a criminal offense?" Answer: No.
+
+Signed electronically by the candidate on Nov 10, 2026 under FCRA consent.`},
+ {id:"hr-meridian",title:"Employer verification · Meridian Capital Group",type:"verification",date:"Nov 13, 2026",text:
+`Verified with: Meridian Capital Group, Human Resources (ref. T. Walsh, HR Operations).
+
+Employment confirmed: Yes. Title at hire and at separation: Analyst II. Start date: June 2022. End date: August 2026. Eligible for rehire: yes.
+
+HR noted no record of the title "Senior Analyst" for this employee. Verification completed by phone and confirmed in writing.`},
+ {id:"hr-northgate",title:"Employer verification · Northgate Insurance",type:"verification",date:"Nov 12, 2026",text:
+`Northgate Insurance HR confirms employment from June 2018 to February 2021, title Junior Analyst. Dates and title match the candidate statement exactly.`},
+ {id:"edu",title:"National Student Clearinghouse result",type:"verification",date:"Nov 11, 2026",text:
+`Institution: University of Illinois Urbana-Champaign. Degree: Bachelor of Science, Finance. Conferred: May 2018. Record status: verified match.`},
+ {id:"court",title:"Cook County Circuit Court record",type:"record",date:"Nov 14, 2026",text:
+`Case 2023-M-48812, Circuit Court of Cook County, Illinois.
+
+Charge: Theft of property not exceeding $500, Class A misdemeanor. Disposition: plea of guilty, 12 months court supervision, completed March 2024. No subsequent entries.
+
+Identifiers matched on full name and date of birth; verified against SSN trace address history.`},
+ {id:"credit",title:"Credit report extract",type:"record",date:"Nov 13, 2026",text:
+`Tradelines in good standing: 7. Delinquent tradelines: 1.
+
+Collections: account placed January 2025, original creditor retail card issuer, balance $8,200, status open.
+
+Report furnished for employment purposes under FCRA 604(b).`},
+ {id:"lab",title:"Lab result · LabPoint Chicago",type:"record",date:"Nov 13, 2026",text:
+`Specimen collected Nov 12, 2026, chain of custody intact. 10-panel urinalysis: negative on all panels. MRO review: complete.`}
+];
+const SIGNAL={critical:"Critical",attention:"Attention",routine:"Routine"};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+let last=null; // last analysis result
+
+// render editable docs
+document.getElementById("docs").innerHTML=DOCS.map((d,i)=>`
+  <details ${i===0?"open":""}><summary>${esc(d.title)} <span>· ${esc(d.type)} · ${esc(d.date)}</span></summary>
+  <textarea data-doc="${d.id}" spellcheck="false">${esc(d.text)}</textarea></details>`).join("");
+const currentDocs=()=>DOCS.map(d=>({...d,text:document.querySelector(`[data-doc="${d.id}"]`).value}));
+
+const err=document.getElementById("err");
+function showErr(m){err.textContent=m;err.style.display="block"}
+function clearErr(){err.style.display="none"}
+
+const runBtn=document.getElementById("run");
+runBtn.addEventListener("click",async()=>{
+  clearErr();runBtn.disabled=true;runBtn.innerHTML='<span class="spin"></span>Analyzing with the agent';
+  try{
+    const r=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({candidate:{name:"Jordan Avery",role:"Senior Financial Analyst"},documents:currentDocs()})});
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.error||("HTTP "+r.status));
+    last=j;renderResult(j);
+    document.getElementById("askCard").style.display="block";
+  }catch(e){
+    showErr("Analysis failed: "+e.message+". Running on Vercel with ANTHROPIC_API_KEY set? (This page needs the serverless API; it does not run from a static file.)");
+  }
+  runBtn.disabled=false;runBtn.textContent="Run analysis";
+});
+
+function renderResult(j){
+  const el=document.getElementById("result");
+  el.innerHTML=`<div class="card">
+    <div class="banner ${j.signal}"><b>${SIGNAL[j.signal]} signal.</b>&nbsp;${esc(j.reason)}</div>
+    <div class="rules">Adjudication: <b>${j.mode==="auto"?"auto, by Smart Report":"recruiter review required"}</b> · rules applied:
+      ${j.rules.map(r=>`<span class="sla">SLA ${r}</span>`).join("")}
+      ${j.dropped?`· <span>${j.dropped} uncited claim${j.dropped>1?"s":""} dropped by the citation gate</span>`:""}
+    </div>
+    <div class="body">${j.sections.map(s=>`
+      <h3 style="font-size:14px;font-weight:900;margin:10px 0 2px">${esc(s.title||s.key)}</h3>
+      ${s.findings.map(f=>{
+        const diverges=f.kind==="discrepancy"||f.kind==="record";
+        return `<div class="finding">
+          <div class="f-top">
+            <span class="badge ${diverges?(s.key==="criminal"?"critical":"attention"):"clear"}"><span class="dot"></span>${diverges?(f.kind==="record"?"Record":"Discrepancy"):"Match"}</span>
+            <h4>${esc(f.title)} ${(f.cites||[]).map((c,i)=>`<button class="cite" data-doc="${esc(c.doc)}" data-ex="${esc(c.excerpt)}">${esc(c.doc)}</button>`).join("")}</h4>
+          </div>
+          ${(f.claimed||f.verified)?`<div class="compare">
+            <div class="c"><div class="k">Candidate stated</div>${esc(f.claimed)||"Not applicable"}</div>
+            <div class="${diverges?"bad":"ok"}"><div class="k">Smart Report verified</div>${esc(f.verified)||"Pending"}</div>
+          </div>`:""}
+          ${f.note?`<p class="note">${esc(f.note)}</p>`:""}
+        </div>`}).join("")}`).join("")}
+    </div></div>`;
+  el.querySelectorAll(".cite").forEach(b=>b.addEventListener("click",()=>openSource(b.dataset.doc,b.dataset.ex)));
+}
+
+// source drawer with highlighted excerpt
+const drawer=document.getElementById("drawer"),scrim=document.getElementById("scrim");
+function openSource(id,excerpt){
+  const d=currentDocs().find(x=>x.id===id);if(!d)return;
+  let body=esc(d.text);
+  if(excerpt){const e=esc(excerpt);const i=body.toLowerCase().indexOf(e.toLowerCase());
+    if(i>=0)body=body.slice(0,i)+"<mark>"+body.slice(i,i+e.length)+"</mark>"+body.slice(i+e.length);}
+  drawer.innerHTML=`<div class="dw-head"><h4>${esc(d.title)}</h4><button class="dw-close" id="dwc">✕</button></div>
+    <div class="dw-body">${body}</div>`;
+  document.body.classList.add("open");
+  document.getElementById("dwc").addEventListener("click",close);
+  const m=drawer.querySelector("mark");if(m)m.scrollIntoView({block:"center"});
+}
+function close(){document.body.classList.remove("open")}
+scrim.addEventListener("click",close);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+
+// grounded chat
+const log=document.getElementById("chatLog"),q=document.getElementById("q"),send=document.getElementById("send");
+async function ask(){
+  const text=q.value.trim();if(!text||!last)return;
+  log.insertAdjacentHTML("beforeend",`<div class="msg me">${esc(text)}</div>`);q.value="";
+  try{
+    const r=await fetch("/api/ask",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({question:text,level:+document.getElementById("level").value,
+        candidate:{name:"Jordan Avery"},sections:last.sections,documents:currentDocs()})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error||("HTTP "+r.status));
+    const html=esc(j.answer).replace(/\[([\w-]+)\]/g,(m,id)=>DOCS.some(d=>d.id===id)?`<button class="cite" data-doc="${id}" data-ex="">${id}</button>`:m);
+    log.insertAdjacentHTML("beforeend",`<div class="msg ai">${html}</div>`);
+    log.querySelectorAll(".cite:not([data-w])").forEach(b=>{b.dataset.w=1;b.addEventListener("click",()=>openSource(b.dataset.doc,b.dataset.ex))});
+  }catch(e){log.insertAdjacentHTML("beforeend",`<div class="msg ai">Ask failed: ${esc(e.message)}</div>`)}
+}
+send.addEventListener("click",ask);
+q.addEventListener("keydown",e=>{if(e.key==="Enter")ask()});
+</script>
+</body>
+</html>
