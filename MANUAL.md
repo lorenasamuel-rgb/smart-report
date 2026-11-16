@@ -1,206 +1,206 @@
-# Manual de uso — Smart Report
+# Smart Report user guide
 
-Guia para quem abre a fila, lê um report e registra a decisão. Os nomes de botões e telas estão em inglês, como no produto.
+How to open the queue, read a report, and record a decision.
 
-Todos os candidatos, empregadores, registros e documentos desta demonstração são fictícios.
+Every candidate, employer, record, and document in this demo is fictional.
 
-## O que o report faz
+## What the report does
 
-Cada caso chega com um sinal e uma frase que explica o motivo. O report mostra o que o candidato declarou ao lado do que foi verificado. Cada afirmação aponta para o documento de origem e para a regra de SLA que encaminhou o caso.
+Each case arrives with one signal and a sentence that states why. The report shows what the candidate stated next to what was verified. Every claim points to its source document and to the SLA rule that routed the case.
 
-O produto recomenda. Contratar, recusar e iniciar adverse action continuam com uma pessoa.
+The product recommends. Hiring, rejection, and adverse action stay with a person.
 
-Há duas superfícies:
+There are two surfaces:
 
-| Onde | Para quê |
+| Where | What it is for |
 | --- | --- |
-| `index.html` | Fila, report com citações, SLA, adjudicação, portal do candidato e exportação. Abre no navegador, sem chave. |
-| `agent.html` | Análise ao vivo: documentos editáveis, extração com citação literal e chat fundamentado. Precisa da API. |
+| `index.html` | Queue, cited report, SLA, adjudication, candidate portal, and export. Opens in a browser with no API key. |
+| `agent.html` | Live analysis: editable documents, verbatim citation extraction, and grounded chat. Needs the API. |
 
-## Como abrir
+## How to open it
 
-Protótipo: abra `index.html` no navegador, ou sirva a pasta com qualquer servidor estático.
+Prototype: open `index.html` in a browser, or serve the folder with any static server.
 
-Agente ao vivo, na raiz do repositório:
+Live agent, from the repo root:
 
-1. Instale a CLI: `npm i -g vercel`
-2. Grave a chave no servidor: `vercel env add ANTHROPIC_API_KEY`
-3. Rode `vercel dev`
-4. Abra `http://localhost:3000` para o protótipo e `http://localhost:3000/agent.html` para o agente
+1. Install the CLI: `npm i -g vercel`
+2. Store the key on the server: `vercel env add ANTHROPIC_API_KEY`
+3. Run `vercel dev`
+4. Open `http://localhost:3000` for the prototype and `http://localhost:3000/agent.html` for the agent
 
-A chave fica só no servidor. O navegador nunca a recebe.
+The key stays on the server. The browser never receives it.
 
-## Cabeçalho
+## Header
 
-No topo, à direita do nome **Smart Report**, ficam os controles que valem para a tela inteira.
+At the top, next to the **Smart Report** name, the controls apply to the whole screen.
 
-- **Recruiter view** é a fila e o report interno.
-- **Candidate view** é o que o candidato vê: status de cada checagem, sem achados nem fontes.
-- **Access level** existe só na visão do recrutador. O texto ao lado do seletor diz o que aquele nível libera.
-- **SLA criteria** aparece a partir do Level 3 e abre o painel de regras. No protótipo o nível é um seletor de demonstração. Em produção ele viria do usuário autenticado.
+- **Recruiter view** is the queue and the internal report.
+- **Candidate view** is what the candidate sees: the status of each check, with no findings and no sources.
+- **Access level** exists only in the recruiter view. The note beside the selector says what that level unlocks.
+- **SLA criteria** appears from Level 3 and opens the rule panel. In the prototype the level is a demo selector. In production it would come from the authenticated user.
 
-## Sinais
+## Signals
 
-A fila ordena os casos pelo sinal. Critical fica no topo.
+The queue ranks cases by signal. Critical sits at the top.
 
-| Sinal | Significado |
+| Signal | Meaning |
 | --- | --- |
-| Critical | Há um registro criminal não divulgado, ou outro achado que a matriz manda para revisão humana urgente. |
-| Attention | Há discrepância de emprego, educação ou crédito que exige revisão, sem o peso de um registro não divulgado. |
-| Routine | As checagens conferem, ou o caso ainda está em andamento sem achado que force revisão. |
+| Critical | An undisclosed criminal record, or another finding the matrix sends to urgent human review. |
+| Attention | An employment, education, or credit discrepancy that needs review, without the weight of an undisclosed record. |
+| Routine | Checks match, or the case is still in progress with nothing that forces review. |
 
-Em cada linha, **Why this signal** é a frase do motivo. O progresso (`6/6`) é quantas checagens já terminaram. **Due in** é o prazo.
+On each row, **Why this signal** is the reason sentence. The progress (`6/6`) is how many checks are finished. **Due in** is the deadline.
 
-## Fila do recrutador
+## Recruiter queue
 
-A tela **Screening queue** começa com **Live intake**. A cada minuto entra um screening fictício. **Start** e **Stop** ligam e pausam esse fluxo. O relógio mostra o tempo até o próximo.
+**Screening queue** opens with **Live intake**. A fictional screening arrives every minute. **Start** and **Stop** run and pause that flow. The clock shows the time until the next one.
 
-Os cartões do dashboard filtram a lista. Clique de novo no cartão ativo para voltar a ver todos.
+Dashboard tiles filter the list. Click the active tile again to see everyone.
 
-- **Active screenings** — todos
-- **Critical signals** / **Attention signals** — pelo sinal
-- **Discrepancies flagged** — casos com pelo menos uma discrepância
-- **Complete and clear** — concluídos sem pendência
+- **Active screenings** — all cases
+- **Critical signals** / **Attention signals** — by signal
+- **Discrepancies flagged** — cases with at least one discrepancy
+- **Complete and clear** — finished with nothing outstanding
 
-A barra **Screening status** filtra por andamento: **Needs review**, **In progress**, **Complete and clear**.
+The **Screening status** bar filters by progress: **Needs review**, **In progress**, **Complete and clear**.
 
-A busca aceita nome, referência (`SR-…`) ou número do pedido (`ORD-…`). O campo **Date** restringe por data de pedido (**Ordered**), prazo (**Due**), conclusão (**Completed**) ou qualquer uma delas (**Any date**). Se nada aparecer, **Show all** limpa filtro, busca e data.
+Search accepts a name, a reference (`SR-…`), or an order number (`ORD-…`). **Date** narrows by order date (**Ordered**), deadline (**Due**), completion (**Completed**), or any of them (**Any date**). If nothing matches, **Show all** clears the filter, the search, and the date.
 
-A caixa à esquerda da linha seleciona o caso para exportar. Ela não abre o report. Clique no restante da linha para abrir.
+The checkbox on the left of a row selects that case for export. It does not open the report. Click the rest of the row to open it.
 
 ### Status bot
 
-O rosto no canto superior direito conta os casos que ainda precisam de você: status de revisão ou sinal critical, e que ainda não receberam uma decisão nesta sessão.
+The face at the top right counts cases that still need you: review status or a critical signal, and no decision recorded in this session.
 
-- Verde: a fila desses casos está vazia. O tooltip diz **Queue is clear.**
-- Laranja: há casos que precisam de você, sem critical em aberto.
-- Rosa: há pelo menos um critical.
+- Green: that list is empty. The tooltip says **Queue is clear.**
+- Orange: cases need you, and none of them are critical.
+- Pink: at least one case is critical.
 
-O número é a quantidade. Clique no bot para ver nome, a próxima ação sugerida e o prazo. Clique num nome para abrir aquele report. Um screening novo faz o bot pulsar por alguns segundos. O bot some na **Candidate view**.
+The number is the count. Click the bot to see the name, the suggested next action, and the deadline. Click a name to open that report. A new screening makes the bot pulse for a few seconds. The bot is hidden in **Candidate view**.
 
-## Ler um report
+## Reading a report
 
-No topo ficam nome, cargo, pacote, sinal e o banner **Why this case is…**. A grade traz Report ID, order number, datas, checagens concluídas e adjudicação. Os chips **SLA 2.2**, **SLA 4.2** e similares abrem a regra que encaminhou o caso.
+The top shows the name, role, package, signal, and the **Why this case is…** banner. The grid shows Report ID, order number, dates, finished checks, and adjudication. Chips such as **SLA 2.2** and **SLA 4.2** open the rule that routed the case.
 
-Cada seção tem um selo `L2+`, `L3+`, `L4+` ou `L5+`. Esse número é o nível mínimo para ver o detalhe. Abaixo dele, a seção mostra o status e um cadeado. O texto do achado fica oculto. No Level 1 o report inteiro vira só a lista de status.
+Each section has a pill: `L2+`, `L3+`, `L4+`, or `L5+`. That number is the minimum level required to see the detail. Below it, the section shows its status and a lock. The finding text stays hidden. At Level 1 the whole report is a status list.
 
-Dentro de uma seção liberada, cada achado traz:
+Inside an unlocked section, each finding shows:
 
-- **Match** — o declarado e o verificado conferem.
-- **Discrepancy** ou **Check** — divergem. Critical em rosa, attention em laranja.
-- **Candidate stated** — o que a pessoa escreveu.
-- **Smart Report verified** — o que a fonte confirmou.
-- Um número ao lado do título — a citação.
+- **Match** — stated and verified agree.
+- **Discrepancy** or **Check** — they do not. Critical is pink, attention is orange.
+- **Candidate stated** — what the person wrote.
+- **Smart Report verified** — what the source confirmed.
+- A number beside the title — the citation.
 
-Clique no número. O painel lateral abre o documento e marca o trecho. Feche com **✕** ou clicando fora.
+Click the number. A side panel opens the document and highlights the passage. Close it with **✕** or by clicking outside.
 
-**Back to queue** volta à fila.
+**Back to queue** returns to the list.
 
-## Níveis de acesso
+## Access levels
 
-O nível vale para a tela, para o chat e para a exportação. Seção bloqueada sai como bloqueada, com o nível exigido, e não como campo em branco.
+The level applies to the screen, the chat, and the export. A locked section exports as locked, with the level it requires, not as a blank field.
 
-| Nível | O que abre |
+| Level | What it opens |
 | --- | --- |
-| 1 | Resultado geral e status de cada checagem. Sem achados, sem fontes, sem chat. |
-| 2 | Identidade, emprego e educação, com fontes. O chat liga. |
-| 3 | Busca criminal e o painel **SLA criteria**. |
-| 4 | Histórico de crédito, para cargos sensíveis a finanças. |
-| 5 | Exame toxicológico e acesso completo às fontes. |
+| 1 | Overall result and the status of each check. No findings, no sources, no chat. |
+| 2 | Identity, employment, and education, with sources. Chat turns on. |
+| 3 | Criminal record search and the **SLA criteria** panel. |
+| 4 | Credit history, for finance-sensitive roles. |
+| 5 | Drug screening and full source access. |
 
-Perguntar no chat sobre algo que está numa seção oculta não revela o conteúdo. A resposta diz que aquele material exige um nível mais alto.
+Asking the chat about something in a hidden section does not reveal it. The answer says that material requires a higher level.
 
-## Perguntar ao report
+## Ask this report
 
-**Ask this report** aparece a partir do Level 2, acima das seções. As respostas usam só as fontes deste caso, dentro do seu nível. Os chips sugerem perguntas já preparadas para aquele candidato. Você também pode digitar e clicar em **Ask**.
+**Ask this report** appears from Level 2, above the sections. Answers use only this case's sources, within your level. Chips suggest questions already prepared for that candidate. You can also type and click **Ask**.
 
-Perguntas úteis: por que o sinal é esse, o que o empregador confirmou, o que a regra de SLA diz, quais checagens bateram, qual é o status.
+Useful questions: why the signal is what it is, what the employer confirmed, what the SLA rule says, which checks matched, what the status is.
 
-Se a pergunta for contratar, recusar ou tomar a decisão, a resposta recusa e devolve o caso para você. Números e chips **SLA** dentro da resposta abrem a mesma fonte ou a mesma regra do report.
+If the question is whether to hire, reject, or make the decision, the answer refuses and leaves the case with you. Numbers and **SLA** chips inside an answer open the same source or the same rule as the report.
 
-No protótipo as respostas são roteirizadas para os casos de demonstração. No agente ao vivo elas vêm do modelo, já filtradas pelo nível antes do modelo ver o caso.
+In the prototype, answers are scripted for the demo cases. On the live agent they come from the model, after the level filter removes hidden sections from the prompt.
 
-## Registrar a decisão
+## Recording a decision
 
-Quando a matriz manda revisão humana, o bloco **Recruiter adjudication** aparece no report.
+When the matrix requires human review, the **Recruiter adjudication** block appears on the report.
 
-1. Leia o banner, os achados e as citações.
-2. Se o achado pede o lado do candidato, clique em **Request candidate context**. O botão vira **Context requested ✓**.
-3. **Start adverse action** só habilita depois desse pedido. A hint explica: fair chance, o contexto vem antes da ação.
-4. **Mark eligible** registra que você considerou a pessoa apta. Pode ser usado sem o pedido de contexto.
-5. **Undo** desfaz a marca desta sessão. A decisão não volta para um sistema de pedidos neste MVP.
+1. Read the banner, the findings, and the citations.
+2. If a finding asks for the candidate's side, click **Request candidate context**. The button becomes **Context requested ✓**.
+3. **Start adverse action** stays disabled until that request is sent. The hint says why: fair chance, context comes before the action.
+4. **Mark eligible** records that you consider the person eligible. It does not require the context request.
+5. **Undo** clears the mark for this session. This MVP does not write the decision back to an order system.
 
-Um caso que a matriz auto-encerra (regra 6.1) não mostra esses botões. A adjudicação aparece como feita pelo Smart Report.
+A case the matrix auto-clears (rule 6.1) does not show these buttons. Adjudication shows as done by Smart Report.
 
-Pedir contexto não muda o sinal. A resposta do candidato, quando existe, fica anexada para você ler. Quem decide continua sendo você.
+Requesting context does not change the signal. The candidate's reply, when there is one, is attached for you to read. The decision stays yours.
 
-## Visão do candidato
+## Candidate view
 
-**Candidate view** esconde nível, SLA e o status bot. A frase no topo deixa explícito: o candidato vê se cada checagem está **Complete** ou **Not complete**. Discrepância, registro e fonte não aparecem.
+**Candidate view** hides the level, the SLA panel, and the status bot. The line under the title states the limit: the candidate sees whether each check is **Complete** or **Not complete**. Discrepancies, records, and sources do not appear.
 
-Os botões com nomes no topo são um seletor de demonstração, para você pré-visualizar cada pessoa. Em produção o candidato veria só o próprio caso.
+The name buttons at the top are a demo switcher, so you can preview each person. In production a candidate would see only their own case.
 
-Se o recrutador já pediu contexto naquele caso, surge o aviso **Your reviewer invited you to add context** e o botão **Share your context**. Depois do envio, a tela confirma que o texto foi anexado ao report do revisor. O rodapé lembra o direito a cópia e a contestação. Este protótipo não abre um fluxo real de disputa.
+If the recruiter already requested context on that case, the notice **Your reviewer invited you to add context** appears, with **Share your context**. After it is sent, the screen confirms the note was attached to the reviewer's report. The footer states the right to a copy and to a dispute. This prototype does not open a real dispute flow.
 
-## Exportar
+## Export
 
-Na fila:
+On the queue:
 
-- Marque um ou mais casos. **Excel (n)** baixa `smart-report-status.xlsx` com nome, cargo, local, IDs, sinal, status, adjudicação, prazo e checagens. Sem seleção, o botão Excel fica desligado.
-- **Export ZIP (all)** junta um PDF por caso da fila inteira. Com casos marcados, o ZIP leva só os marcados (`smart-report-reports.zip`).
+- Check one or more cases. **Excel (n)** downloads `smart-report-status.xlsx` with name, role, location, IDs, signal, status, adjudication, due date, and checks. With nothing selected, Excel stays off.
+- **Export ZIP (all)** packs one PDF per case in the whole queue. With cases checked, the ZIP contains only those (`smart-report-reports.zip`).
 
-Dentro do report:
+Inside a report:
 
-- **PDF** baixa o report da pessoa no nível atual. Seção bloqueada entra como bloqueada.
-- **Print** abre a impressão do navegador. Se a impressão não estiver disponível, o botão copia um resumo em texto.
+- **PDF** downloads that person's report at the current level. A locked section is included as locked.
+- **Print** opens the browser print dialog. If print is unavailable, the button copies a text summary instead.
 
-O arquivo leva a linha do nível de acesso usado na exportação.
+The file records the access level used for the export.
 
-## Regras de SLA
+## SLA rules
 
-**SLA criteria** (Level 3 ou mais) abre a matriz do cliente, somente leitura. A regra que disparou naquele caso fica destacada quando você chega por um chip **SLA**.
+**SLA criteria** (Level 3 and above) opens the client matrix, read-only. The rule that fired on the open case is highlighted when you arrive from an **SLA** chip.
 
-| Regra | Quando dispara | Encaminhamento |
+| Rule | Fires when | Routing |
 | --- | --- | --- |
-| 1.1 | Identidade confere | Automático |
-| 2.1 | Emprego dentro da janela (título e datas, até 3 meses) | Automático |
-| 2.2 | Data de emprego com mais de 3 meses de diferença, ou título divergente | Revisão, attention |
-| 3.1 | Diploma conferido até 6 meses da data declarada | Automático |
-| 3.2 | Formatura com mais de 6 meses de diferença, ou instituição divergente | Revisão, attention |
-| 4.1 | Sem registros criminais | Automático |
-| 4.2 | Registro que o candidato não divulgou. Avaliação individual antes de qualquer adverse action | Revisão, critical |
-| 5.1 | Cobrança em aberto acima de US$ 5.000 em cargo sensível a finanças | Revisão, attention |
-| 6.1 | Todas as seções acima liberadas | Automático, routine |
+| 1.1 | Identity matches | Auto |
+| 2.1 | Employment is inside the window (title and dates, up to 3 months) | Auto |
+| 2.2 | Employment dates differ by more than 3 months, or the title does not match | Review, attention |
+| 3.1 | Degree conferred within 6 months of the stated date | Auto |
+| 3.2 | Conferral differs by more than 6 months, or the institution does not match | Review, attention |
+| 4.1 | No criminal records | Auto |
+| 4.2 | A record the candidate did not disclose. Individualized assessment before any adverse action | Review, critical |
+| 5.1 | Open collections above $5,000 on a finance-sensitive role | Review, attention |
+| 6.1 | Every section above cleared | Auto, routine |
 
-Critical prevalece sobre attention, que prevalece sobre routine. A regra 4.2 não recusa o caso sozinha. Ela obriga revisão humana.
+Critical wins over attention, which wins over routine. Rule 4.2 does not reject the case by itself. It requires human review.
 
-## Um caminho curto no protótipo
+## A short path through the prototype
 
-1. Fique em **Recruiter view**, Level 3.
-2. Abra Jordan Avery (`SR-2026-1187`), o caso critical no topo.
-3. Clique na citação do registro de Cook County e leia o trecho marcado.
-4. Clique em **SLA 4.2** e leia a regra.
-5. Mude para Level 2 e veja a seção criminal travar. O chat, se perguntar do registro, também trava.
-6. Volte ao Level 3, clique em **Request candidate context** e só então **Start adverse action** fica disponível. Use **Undo** se quiser limpar a marca.
-7. Troque para **Candidate view**, escolha a mesma pessoa e, se o contexto foi pedido, use **Share your context**.
+1. Stay on **Recruiter view**, Level 3.
+2. Open Jordan Avery (`SR-2026-1187`), the critical case at the top.
+3. Click the Cook County record citation and read the highlighted passage.
+4. Click **SLA 4.2** and read the rule.
+5. Switch to Level 2 and watch the criminal section lock. If the chat is asked about the record, that answer locks too.
+6. Return to Level 3, click **Request candidate context**, and only then **Start adverse action** is available. Use **Undo** if you want to clear the mark.
+7. Switch to **Candidate view**, pick the same person, and if context was requested, use **Share your context**.
 
-## Agente ao vivo
+## Live agent
 
-Em `agent.html` os documentos de Jordan Avery são editáveis. **Run analysis** envia o caso: o modelo extrai achados com trechos literais, o código descarta citação que não existe no documento nomeado, e a matriz de SLA define sinal e regras. O banner informa quantos achados foram descartados.
+On `agent.html` the Jordan Avery documents are editable. **Run analysis** sends the case: the model extracts findings with verbatim excerpts, code drops any citation that is not in the named document, and the SLA matrix sets the signal and the rules. The banner reports how many findings were dropped.
 
-**Access level** nessa página filtra só o chat. Rode a análise antes de perguntar. **Ask this report** aparece depois do resultado.
+**Access level** on this page filters the chat only. Run the analysis before you ask. **Ask this report** appears after the result.
 
-Para ver a matriz reagir:
+To watch the matrix react:
 
-- Apague o documento do tribunal, ou mude a acusação de um jeito que o achado criminal suma: o sinal deixa de ser critical e a regra 4.2 sai da lista.
-- Alinhe as datas de Meridian na candidatura com a verificação de RH: a discrepância de emprego some.
-- Pergunte por que o caso precisa de revisão no Level 3 e de novo no Level 2: a resposta criminal trava no nível mais baixo.
-- Pergunte se deve contratar: a resposta recusa.
+- Delete the court document, or change the charge so the criminal finding disappears: the signal leaves critical and rule 4.2 leaves the list.
+- Align the application's Meridian dates with the HR verification: the employment discrepancy disappears.
+- Ask why the case needs review at Level 3, then again at Level 2: the criminal answer locks at the lower level.
+- Ask whether to hire: the answer refuses.
 
-## O que este report não faz
+## What this report does not do
 
-- Não recomenda contratar, recusar ou adverse action.
-- Não altera o sinal porque o candidato respondeu ao convite.
-- Não grava a adjudicação num sistema de pedidos.
-- Não coleta consentimento real nem abre disputa.
-- Não usa dado de produção. Os casos da demonstração são inventados.
+- It does not recommend hire, reject, or adverse action.
+- It does not change the signal because the candidate answered the invitation.
+- It does not write the adjudication back to an order system.
+- It does not collect live consent or open a dispute.
+- It does not use production data. The demo cases are fictional.
