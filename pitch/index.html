@@ -70,7 +70,16 @@ h2{
   font-size:clamp(32px,3.5vw,52px);color:var(--ink);
   max-width:34ch;
 }
-.team-line{margin-top:8px;font-size:14px;font-weight:700;color:var(--ink-soft)}
+.team-line{margin-top:8px;font-size:14px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;gap:10px}
+.team-line img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none}
+.presenter{
+  display:flex;align-items:center;gap:14px;width:max-content;max-width:100%;
+  margin-top:3vh;background:#fff;border:1px solid var(--line);border-radius:999px;
+  padding:6px 18px 6px 6px;box-shadow:var(--shadow);
+}
+.presenter img{width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;flex:none}
+.presenter strong{display:block;font-size:16px;letter-spacing:-.02em;line-height:1.2}
+.presenter span{display:block;margin-top:2px;font-size:13px;font-weight:700;color:var(--ink-soft)}
 .dek{
   margin-top:2.2vh;max-width:38ch;
   font-size:clamp(18px,1.7vw,26px);line-height:1.35;color:var(--ink-soft);
@@ -318,8 +327,14 @@ body.show-notes .notes{display:block}
       <div class="wordmark">Smart <em>Report</em></div>
       <h1>One report. One alert.</h1>
       <p class="dek">The case that needs a person is the first one a recruiter opens. Every reason opens back to a source and to the rule that routed it.</p>
+      <div class="presenter">
+        <img src="lorena-barros.jpg" alt="">
+        <div>
+          <strong>Lorena Barros</strong>
+          <span>Client Service Specialist · Team CocreateHub</span>
+        </div>
+      </div>
       <div class="meta-row">
-        <span class="pill">Lorena Barros · Team CocreateHub</span>
         <span class="pill">Accurate Hackathon 2026</span>
         <span class="pill">5 minutes</span>
         <span class="pill">Fictional data only</span>
@@ -443,7 +458,7 @@ body.show-notes .notes{display:block}
   <section class="slide" data-end="282" data-notes="trust">
     <div class="frame">
       <h2>Three checks in the room.</h2>
-      <p class="team-line">Lorena Barros · Team CocreateHub</p>
+      <p class="team-line"><img src="lorena-barros.jpg" alt="">Lorena Barros · Client Service Specialist · Team CocreateHub</p>
       <div class="guards">
         <article class="guard">
           <div class="num">01</div>
@@ -474,8 +489,12 @@ body.show-notes .notes{display:block}
     <div class="frame">
       <h1>Start with the case that matters.</h1>
       <p class="dek">End with a person who can point at the source and at the rule.</p>
-      <div class="meta-row">
-        <span class="pill">Lorena Barros · Team CocreateHub</span>
+      <div class="presenter">
+        <img src="lorena-barros.jpg" alt="">
+        <div>
+          <strong>Lorena Barros</strong>
+          <span>Client Service Specialist · Team CocreateHub</span>
+        </div>
       </div>
     </div>
     <div class="foot"><span><b>Smart Report</b> · Accurate Hackathon 2026</span></div>
@@ -531,7 +550,7 @@ const NOTES = {
   },
   close: {
     who: "4:42 – 5:00 · land it, then open the queue.",
-    say: "A faster hire starts with the case that matters. It ends with a person who can point at the source and at the rule. I’m Lorena Barros, Team CocreateHub. We’ll open Jordan’s queue.",
+    say: "A faster hire starts with the case that matters. It ends with a person who can point at the source and at the rule. I’m Lorena Barros, Client Service Specialist, Team CocreateHub. We’ll open Jordan’s queue.",
     cue: "Stop talking. Click the prototype. Name each teammate’s piece if you have not already."
   }
 };
